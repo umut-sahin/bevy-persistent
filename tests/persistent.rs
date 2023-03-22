@@ -1,0 +1,167 @@
+mod common;
+use common::*;
+
+#[test]
+fn create_non_existing() -> anyhow::Result<()> {
+    let tempdir = tempfile::tempdir()?;
+
+    let name = "key bindings";
+    let format = StorageFormat::Toml;
+    let path = tempdir.path().join("key-bindings.toml");
+    let default = KeyBindings::default();
+
+    assert!(!path.exists());
+
+    let resource = Persistent::<KeyBindings>::builder()
+        .name(name)
+        .format(format)
+        .path(&path)
+        .default(default)
+        .build();
+
+    assert!(path.exists());
+
+    let expected_resource = KeyBindings::default();
+    let actual_resource = resource.get();
+
+    assert_eq!(actual_resource, &expected_resource);
+
+    let expected_content = toml::to_string(&expected_resource)?;
+    let actual_content = std::fs::read_to_string(&path)?;
+
+    assert_eq!(expected_content.trim(), actual_content.trim());
+
+    Ok(())
+}
+
+#[test]
+fn create_existing() -> anyhow::Result<()> {
+    let tempdir = tempfile::tempdir()?;
+
+    let name = "key bindings";
+    let format = StorageFormat::Toml;
+    let path = tempdir.path().join("key-bindings.toml");
+    let default = KeyBindings::default();
+
+    let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+    let existing_content = toml::to_string(&existing_resource)?;
+
+    std::fs::write(&path, &existing_content)?;
+    assert!(path.exists());
+
+    let resource = Persistent::<KeyBindings>::builder()
+        .name(name)
+        .format(format)
+        .path(&path)
+        .default(default)
+        .build();
+
+    let expected_resource = existing_resource;
+    let actual_resource = resource.get();
+
+    assert_eq!(actual_resource, &expected_resource);
+
+    let expected_content = existing_content;
+    let actual_content = std::fs::read_to_string(&path)?;
+
+    assert_eq!(expected_content.trim(), actual_content.trim());
+
+    Ok(())
+}
+
+#[test]
+fn set() -> anyhow::Result<()> {
+    let tempdir = tempfile::tempdir()?;
+
+    let name = "key bindings";
+    let format = StorageFormat::Toml;
+    let path = tempdir.path().join("key-bindings.toml");
+    let default = KeyBindings::default();
+
+    assert!(!path.exists());
+
+    let mut resource = Persistent::<KeyBindings>::builder()
+        .name(name)
+        .format(format)
+        .path(&path)
+        .default(default)
+        .build();
+
+    assert!(path.exists());
+
+    let expected_initial_resource = KeyBindings::default();
+    let actual_initial_resource = resource.get();
+
+    assert_eq!(actual_initial_resource, &expected_initial_resource);
+
+    let expected_initial_content = toml::to_string(&expected_initial_resource)?;
+    let actual_initial_content = std::fs::read_to_string(&path)?;
+
+    assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
+
+    let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+    resource.set(new_resource.clone());
+
+    let expected_new_resource = new_resource;
+    let actual_new_resource = resource.get();
+
+    assert_eq!(actual_new_resource, &expected_new_resource);
+
+    let expected_new_content = toml::to_string(&expected_new_resource)?;
+    let actual_new_content = std::fs::read_to_string(&path)?;
+
+    assert_eq!(expected_new_content.trim(), actual_new_content.trim());
+
+    Ok(())
+}
+
+#[test]
+fn update() -> anyhow::Result<()> {
+    let tempdir = tempfile::tempdir()?;
+
+    let name = "key bindings";
+    let format = StorageFormat::Toml;
+    let path = tempdir.path().join("key-bindings.toml");
+    let default = KeyBindings::default();
+
+    assert!(!path.exists());
+
+    let mut resource = Persistent::<KeyBindings>::builder()
+        .name(name)
+        .format(format)
+        .path(&path)
+        .default(default)
+        .build();
+
+    assert!(path.exists());
+
+    let expected_initial_resource = KeyBindings::default();
+    let actual_initial_resource = resource.get();
+
+    assert_eq!(actual_initial_resource, &expected_initial_resource);
+
+    let expected_initial_content = toml::to_string(&expected_initial_resource)?;
+    let actual_initial_content = std::fs::read_to_string(&path)?;
+
+    assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
+
+    fn updater(key_bindings: &mut KeyBindings) {
+        key_bindings.crouch = KeyCode::LControl;
+    }
+    resource.update(updater);
+
+    let mut new_resource = expected_initial_resource;
+    updater(&mut new_resource);
+
+    let expected_new_resource = new_resource;
+    let actual_new_resource = resource.get();
+
+    assert_eq!(actual_new_resource, &expected_new_resource);
+
+    let expected_new_content = toml::to_string(&expected_new_resource)?;
+    let actual_new_content = std::fs::read_to_string(&path)?;
+
+    assert_eq!(expected_new_content.trim(), actual_new_content.trim());
+
+    Ok(())
+}
