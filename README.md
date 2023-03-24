@@ -232,6 +232,12 @@ There are a few examples that you can run directly and play around with in the [
 cargo run --release --features all --example name-of-the-example
 ```
 
+To run the examples in a browser using WebAssembly, you can use [wasm-server-runner](https://github.com/jakobhellermann/wasm-server-runner).
+
+```shell
+cargo run --release --features all --target wasm32-unknown-unknown --example name-of-the-example
+```
+
 ## License
 
 [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) is free, open source and permissively licensed, just like [Bevy](https://bevyengine.org/)!

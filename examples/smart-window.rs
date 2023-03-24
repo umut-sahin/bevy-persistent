@@ -11,7 +11,10 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use std::ops::Deref;
+use std::{
+    ops::Deref,
+    path::Path,
+};
 
 #[derive(Resource, Serialize, Deserialize)]
 struct WindowState {
@@ -23,11 +26,16 @@ fn main() {
     let mut app = App::new();
     app.add_plugin(LogPlugin::default());
 
-    let state_dir = dirs::state_dir().unwrap().join("bevy-persistent").join("examples");
+    let state_dir = dirs::state_dir()
+        .map(|native_state_dir| native_state_dir.join("bevy-persistent"))
+        .unwrap_or(Path::new("local").join("state"))
+        .join("examples")
+        .join("smart-windows");
+
     let persistent_window_state = Persistent::<WindowState>::builder()
         .name("window state")
         .format(StorageFormat::Toml)
-        .path(state_dir.join("smart-windows").join("window-state.toml"))
+        .path(state_dir.join("window-state.toml"))
         .default(WindowState { position: (0, 0), size: (800, 600) })
         .build();
 
