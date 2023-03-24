@@ -7,7 +7,10 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use std::time::Duration;
+use std::{
+    path::Path,
+    time::Duration,
+};
 
 const PLAYER_SIZE: f32 = 50.00;
 const PLAYER_SPEED: f32 = 500.00;
@@ -28,14 +31,19 @@ struct AutosaveTimer {
 }
 
 fn main() {
-    let state_dir = dirs::state_dir().unwrap().join("bevy-persistent").join("examples");
+    let state_dir = dirs::state_dir()
+        .map(|native_state_dir| native_state_dir.join("bevy-persistent"))
+        .unwrap_or(Path::new("local").join("state"))
+        .join("examples")
+        .join("autosave");
+
     App::new()
         .add_plugins(DefaultPlugins)
         .insert_resource(
             Persistent::<GameState>::builder()
                 .name("game state")
                 .format(StorageFormat::Bincode)
-                .path(state_dir.join("autosave").join("game-state.bin"))
+                .path(state_dir.join("game-state.bin"))
                 .default(GameState::default())
                 .build(),
         )

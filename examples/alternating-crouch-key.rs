@@ -8,6 +8,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
+use std::path::Path;
 
 #[derive(Debug, Deserialize, Resource, Serialize)]
 struct KeyBindings {
@@ -29,12 +30,17 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    let config_dir = dirs::config_dir().unwrap().join("bevy-persistent").join("examples");
+    let config_dir = dirs::config_dir()
+        .map(|native_config_dir| native_config_dir.join("bevy-persistent"))
+        .unwrap_or(Path::new("session").join("configuration"))
+        .join("examples")
+        .join("alternating-crouch-key");
+
     commands.insert_resource(
         Persistent::<KeyBindings>::builder()
             .name("key bindings")
             .format(StorageFormat::Toml)
-            .path(config_dir.join("alternating-crouch-key").join("key-bindings.toml"))
+            .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
             .build(),
     )
