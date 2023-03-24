@@ -8,7 +8,7 @@
     feature = "json",
     feature = "ron",
     feature = "toml",
-    feature = "yaml"
+    feature = "yaml",
 )))]
 compile_error!(concat!(r#"no storage formats are selected!
 
