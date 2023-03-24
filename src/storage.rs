@@ -25,7 +25,7 @@ pub enum StorageFormat {
     feature = "json",
     feature = "ron",
     feature = "toml",
-    feature = "yaml"
+    feature = "yaml",
 ))]
 impl StorageFormat {
     /// Serializes a resource into bytes.
@@ -187,7 +187,7 @@ impl StorageFormat {
     feature = "json",
     feature = "ron",
     feature = "toml",
-    feature = "yaml"
+    feature = "yaml",
 )))]
 impl StorageFormat {
     /// Serializes a resource into bytes.
