@@ -67,6 +67,27 @@ fn test_json() -> anyhow::Result<()> {
 }
 
 #[test]
+#[cfg(feature = "ron")]
+fn test_ron() -> anyhow::Result<()> {
+    let format = StorageFormat::Ron;
+    let resource = KeyBindings::default();
+
+    let actual_serialized_resource = format.serialize("key bindings", &resource).unwrap();
+    let expected_serialized_resource = ron::to_string(&resource).unwrap().into_bytes();
+
+    assert_eq!(actual_serialized_resource, expected_serialized_resource);
+
+    let actual_deserialized_resource =
+        format.deserialize::<KeyBindings>("key bindings", &actual_serialized_resource).unwrap();
+    let expected_deserialized_resource =
+        ron::from_str::<KeyBindings>(std::str::from_utf8(&expected_serialized_resource)?).unwrap();
+
+    assert_eq!(expected_deserialized_resource, actual_deserialized_resource);
+
+    Ok(())
+}
+
+#[test]
 #[cfg(feature = "toml")]
 fn test_toml() -> anyhow::Result<()> {
     let format = StorageFormat::Toml;

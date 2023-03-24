@@ -11,6 +11,8 @@ pub enum StorageFormat {
     Ini,
     #[cfg(feature = "json")]
     Json,
+    #[cfg(feature = "ron")]
+    Ron,
     #[cfg(feature = "toml")]
     Toml,
     #[cfg(feature = "yaml")]
@@ -21,6 +23,7 @@ pub enum StorageFormat {
     feature = "bincode",
     feature = "ini",
     feature = "json",
+    feature = "ron",
     feature = "toml",
     feature = "yaml"
 ))]
@@ -58,6 +61,16 @@ impl StorageFormat {
                     Ok(serialized_resource) => Some(serialized_resource.into_bytes()),
                     Err(error) => {
                         log::warn!("failed to serialize {} to JSON\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
+            #[cfg(feature = "ron")]
+            StorageFormat::Ron => {
+                match ron::to_string(resource) {
+                    Ok(serialized_resource) => Some(serialized_resource.into_bytes()),
+                    Err(error) => {
+                        log::warn!("failed to serialize {} to RON\n\n{}", name, error);
                         None
                     },
                 }
@@ -134,6 +147,16 @@ impl StorageFormat {
                     },
                 }
             },
+            #[cfg(feature = "ron")]
+            StorageFormat::Ron => {
+                match ron::from_str::<R>(serialized_resource_str) {
+                    Ok(resource) => Some(resource),
+                    Err(error) => {
+                        log::warn!("failed to parse {} as RON\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
             #[cfg(feature = "toml")]
             StorageFormat::Toml => {
                 match toml::from_str::<R>(serialized_resource_str) {
@@ -162,6 +185,7 @@ impl StorageFormat {
     feature = "bincode",
     feature = "ini",
     feature = "json",
+    feature = "ron",
     feature = "toml",
     feature = "yaml"
 )))]
