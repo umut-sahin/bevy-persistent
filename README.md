@@ -102,6 +102,26 @@ fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
 
 [Persistent\<R>](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html) has [set](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.set) and [update](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.update) methods to modify the underlying resource. Both of those methods write the updated resource to the disk before returning.
 
+## Manual Persistence
+
+Some resources are updated frequently and persisting on each small update might not be desirable. Or persistence could have to be triggered manually (e.g., auto saves on certain points in the game).
+
+For such cases, you can avoid using [set](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.set) and [update](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.update) methods and update the resource directly.
+
+```rust
+fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
+  key_bindings.crouch = KeyCode::LControl;
+}
+```
+
+When you want the resource to persist with its current value, you can use [persist](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.persist) method.
+
+```rust
+fn persist_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
+  key_bindings.persist();
+}
+```
+
 ## Prettifying
 
 It's a good idea to store some resources with a prettified format during development to easily observe/modify them.

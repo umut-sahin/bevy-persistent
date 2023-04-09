@@ -103,6 +103,11 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     pub fn get(&self) -> &R {
         &self.resource
     }
+
+    /// Gets the resource mutably.
+    pub fn get_mut(&mut self) -> &mut R {
+        &mut self.resource
+    }
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
@@ -111,7 +116,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Changes are synchronized with the disk immediately.
     pub fn set(&mut self, new_resource: R) {
         self.resource = new_resource;
-        self.sync();
+        self.persist();
     }
 
     /// Updates the resource.
@@ -119,12 +124,13 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Changes are synchronized with the disk immediately.
     pub fn update(&mut self, updater: impl Fn(&mut R)) {
         updater(&mut self.resource);
-        self.sync();
+        self.persist();
     }
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
-    fn sync(&mut self) {
+    /// Writes the resource to the disk.
+    pub fn persist(&self) {
         if let Some(serialized_resource) = self.storage.serialize(self.name(), &self.resource) {
             std::fs::OpenOptions::new()
                 .write(true)
@@ -147,5 +153,11 @@ impl<R: Resource + Serialize + DeserializeOwned> Deref for Persistent<R> {
 
     fn deref(&self) -> &R {
         self.get()
+    }
+}
+
+impl<R: Resource + Serialize + DeserializeOwned> DerefMut for Persistent<R> {
+    fn deref_mut(&mut self) -> &mut R {
+        self.get_mut()
     }
 }

@@ -11,7 +11,10 @@ pub(crate) use serde::{
 };
 pub(crate) use std::{
     io::Write,
-    ops::Deref,
+    ops::{
+        Deref,
+        DerefMut,
+    },
     path::{
         Path,
         PathBuf,
