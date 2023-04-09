@@ -7,6 +7,7 @@ pub use serde::{
     Deserialize,
     Serialize,
 };
+pub use std::path::PathBuf;
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Resource, Serialize)]
 pub struct KeyBindings {

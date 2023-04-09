@@ -170,6 +170,60 @@ And to release your game, you can compile using:
 cargo build --release
 ```
 
+## WebAssembly
+
+### ...is supported!
+
+When building persistent resources, you need to specify a path. Normally, this path is used to specify a location in the filesystem, but there is no filesystem in WebAssembly. Instead, it has [local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) and [session storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage).
+
+Changing the API of the library, or creating a separate API for WebAssembly would make the library complicated to use. Instead, the library uses the fact that the selection of storage can be done using a path.
+
+- `/local/settings/key-bindings.toml` would store the persistent resource in local storage with the key `settings/key-bindings.toml`
+- `/session/settings/key-bindings.toml` would store the persistent resource in session storage with the key `settings/key-bindings.toml`
+
+It might seem complicated at first, but makes it really easy to support both Native and WebAssembly application.
+
+```rust
+use std::path::Path;
+
+fn setup(mut commands: Commands) {
+  let config_dir = dirs::config_dir()
+    .map(|native_config_dir| native_config_dir.join("your-amazing-game"))
+    .unwrap_or(Path::new("local").join("configuration"));
+
+  commands.insert_resource(
+    Persistent::<KeyBindings>::builder()
+      .name("key bindings")
+      .format(StorageFormat::Json)
+      .path(config_dir.join("key-bindings.toml"))
+      .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+      .build(),
+  )
+}
+```
+
+With the code above, you don't need to have any conditional compilation to support both Native and WebAssembly application.
+
+- In Native applications, it'll determine the configuration directory of the platform (e.g., `~/.config`) and join the name of your game to it (e.g., `~/.config/your-amazing-game`), and use it as the base directory in the filesystem.
+- In WebAssembly applications, it'll use local storage with the base key of `configuration`, once you join it with `key-binding.toml`, the resource will be stored using the key `configuration/key-bindings.toml`.
+
+If the first element of the specified path is not `"local"` or `"session"`, the library will panic!
+
+If you don't like this approach, and want to be strict with types, you can use the [new](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.new) method of [Persistent\<R>](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html) instead.
+
+```rust
+fn setup(mut commands: Commands) {
+    use bevy_persistent::Storage;
+
+    let name = "key bindings";
+    let format = StorageFormat::Toml;
+    let storage = Storage::LocalStorage { key: "key bindings".to_owned() };
+    let default = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C };
+
+    commands.insert_resource(Persistent::new(name, format, storage, default));
+}
+```
+
 ## Examples
 
 There are a few examples that you can run directly and play around with in the [examples](https://github.com/umut-sahin/bevy-persistent/tree/main/examples) folder.

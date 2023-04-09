@@ -67,3 +67,81 @@ mod native {
             .build();
     }
 }
+
+
+#[cfg(target_family = "wasm")]
+mod wasm {
+    use super::*;
+    use gloo_storage::{
+        LocalStorage,
+        SessionStorage,
+        Storage as _,
+    };
+    use wasm_bindgen_test::*;
+
+    #[wasm_bindgen_test]
+    #[cfg(feature = "toml")]
+    fn test_builder_build_local_storage() -> anyhow::Result<()> {
+        LocalStorage::clear();
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let path = PathBuf::from("local").join("key-bindings.toml");
+        let default = KeyBindings::default();
+
+        assert!(LocalStorage::raw().get_item("key-bindings.toml").unwrap().is_none());
+
+        let resource = Persistent::<KeyBindings>::builder()
+            .name(name)
+            .format(format)
+            .path(path)
+            .default(default.clone())
+            .build();
+
+        assert!(LocalStorage::raw().get_item("key-bindings.toml").unwrap().is_some());
+
+        assert_eq!(resource.name(), name);
+        assert_eq!(resource.format(), format);
+        assert_eq!(
+            resource.storage(),
+            &Storage::LocalStorage { key: "key-bindings.toml".to_owned() },
+        );
+        assert_eq!(resource.get(), &default);
+
+        Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    #[cfg(feature = "toml")]
+    fn test_builder_build_session_storage() -> anyhow::Result<()> {
+        SessionStorage::clear();
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let path = PathBuf::from("session").join("key-bindings.toml");
+        let default = KeyBindings::default();
+
+        assert!(SessionStorage::raw().get_item("key-bindings.toml").unwrap().is_none());
+
+        let resource = Persistent::<KeyBindings>::builder()
+            .name(name)
+            .format(format)
+            .path(path)
+            .default(default.clone())
+            .build();
+
+        assert!(SessionStorage::raw().get_item("key-bindings.toml").unwrap().is_some());
+
+        assert_eq!(resource.name(), name);
+        assert_eq!(resource.format(), format);
+        assert_eq!(
+            resource.storage(),
+            &Storage::SessionStorage { key: "key-bindings.toml".to_owned() },
+        );
+        assert_eq!(resource.get(), &default);
+
+        Ok(())
+    }
+
+    wasm_bindgen_test_configure!(run_in_browser);
+}
