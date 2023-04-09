@@ -38,14 +38,14 @@ fn test_builder_no_name() {
 
 #[test]
 #[should_panic(expected = "persistent resource format is not set")]
-fn test_builder_no_path() {
+fn test_builder_no_format() {
     Persistent::<KeyBindings>::builder().name("key bindings").build();
 }
 
 #[test]
 #[should_panic(expected = "persistent resource path is not set")]
 #[cfg(feature = "toml")]
-fn test_builder_no_format() {
+fn test_builder_no_path() {
     Persistent::<KeyBindings>::builder().name("key bindings").format(StorageFormat::Toml).build();
 }
 
