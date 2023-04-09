@@ -61,7 +61,28 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         let path = self.path.unwrap();
         let default = self.default.unwrap();
 
-        let storage = Storage::Filesystem { path: path.canonicalize().unwrap_or(path) };
+        let storage = {
+            #[cfg(not(target_family = "wasm"))]
+            {
+                Storage::Filesystem { path: path.canonicalize().unwrap_or(path) }
+            }
+            #[cfg(target_family = "wasm")]
+            {
+                let separator = std::path::MAIN_SEPARATOR_STR;
+                let path = path.strip_prefix(separator).unwrap_or(&path);
+
+                if let Ok(Some(key)) = path.strip_prefix("local").map(|p| p.to_str()) {
+                    Storage::LocalStorage { key: key.to_owned() }
+                } else if let Ok(Some(key)) = path.strip_prefix("session").map(|p| p.to_str()) {
+                    Storage::SessionStorage { key: key.to_owned() }
+                } else {
+                    panic!(
+                        "persistent resource path should start with \
+                        \"local\" or \"session\" and be UTF-8 encoded in WebAssembly",
+                    );
+                }
+            }
+        };
 
         Persistent::new(name, format, storage, default)
     }

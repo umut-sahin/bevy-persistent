@@ -39,6 +39,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             storage
                 .initialize()
                 .map_err(|error| {
+                    // initialize can only return error for filesystem storage
                     log::warn!(
                         "failed to create the parent directory for default {} at {}: {}",
                         name,
