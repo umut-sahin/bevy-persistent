@@ -11,10 +11,16 @@ pub enum StorageFormat {
     Ini,
     #[cfg(feature = "json")]
     Json,
+    #[cfg(all(feature = "json", feature = "pretty"))]
+    JsonPretty,
     #[cfg(feature = "ron")]
     Ron,
+    #[cfg(all(feature = "ron", feature = "pretty"))]
+    RonPretty,
     #[cfg(feature = "toml")]
     Toml,
+    #[cfg(all(feature = "toml", feature = "pretty"))]
+    TomlPretty,
     #[cfg(feature = "yaml")]
     Yaml,
 }
@@ -65,6 +71,16 @@ impl StorageFormat {
                     },
                 }
             },
+            #[cfg(all(feature = "json", feature = "pretty"))]
+            StorageFormat::JsonPretty => {
+                match serde_json::to_string_pretty(resource) {
+                    Ok(serialized_resource) => Some(serialized_resource.into_bytes()),
+                    Err(error) => {
+                        log::warn!("failed to serialize {} to pretty JSON\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
             #[cfg(feature = "ron")]
             StorageFormat::Ron => {
                 match ron::to_string(resource) {
@@ -75,12 +91,32 @@ impl StorageFormat {
                     },
                 }
             },
+            #[cfg(all(feature = "ron", feature = "pretty"))]
+            StorageFormat::RonPretty => {
+                match ron::ser::to_string_pretty(resource, Default::default()) {
+                    Ok(serialized_resource) => Some(serialized_resource.into_bytes()),
+                    Err(error) => {
+                        log::warn!("failed to serialize {} to pretty RON\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
             #[cfg(feature = "toml")]
             StorageFormat::Toml => {
                 match toml::to_string(resource) {
                     Ok(serialized_resource) => Some(serialized_resource.into_bytes()),
                     Err(error) => {
                         log::warn!("failed to serialize {} to TOML\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
+            #[cfg(all(feature = "toml", feature = "pretty"))]
+            StorageFormat::TomlPretty => {
+                match toml::to_string_pretty(resource) {
+                    Ok(serialized_resource) => Some(serialized_resource.into_bytes()),
+                    Err(error) => {
+                        log::warn!("failed to serialize {} to pretty TOML\n\n{}", name, error);
                         None
                     },
                 }
@@ -147,6 +183,16 @@ impl StorageFormat {
                     },
                 }
             },
+            #[cfg(all(feature = "json", feature = "pretty"))]
+            StorageFormat::JsonPretty => {
+                match serde_json::from_str::<R>(serialized_resource_str) {
+                    Ok(resource) => Some(resource),
+                    Err(error) => {
+                        log::warn!("failed to parse {} as pretty JSON\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
             #[cfg(feature = "ron")]
             StorageFormat::Ron => {
                 match ron::from_str::<R>(serialized_resource_str) {
@@ -157,12 +203,32 @@ impl StorageFormat {
                     },
                 }
             },
+            #[cfg(all(feature = "ron", feature = "pretty"))]
+            StorageFormat::RonPretty => {
+                match ron::from_str::<R>(serialized_resource_str) {
+                    Ok(resource) => Some(resource),
+                    Err(error) => {
+                        log::warn!("failed to parse {} as pretty RON\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
             #[cfg(feature = "toml")]
             StorageFormat::Toml => {
                 match toml::from_str::<R>(serialized_resource_str) {
                     Ok(resource) => Some(resource),
                     Err(error) => {
                         log::warn!("failed to parse {} as TOML\n\n{}", name, error);
+                        None
+                    },
+                }
+            },
+            #[cfg(all(feature = "toml", feature = "pretty"))]
+            StorageFormat::TomlPretty => {
+                match toml::from_str::<R>(serialized_resource_str) {
+                    Ok(resource) => Some(resource),
+                    Err(error) => {
+                        log::warn!("failed to parse {} as pretty TOML\n\n{}", name, error);
                         None
                     },
                 }
