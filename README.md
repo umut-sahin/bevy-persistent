@@ -102,6 +102,54 @@ fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
 
 [Persistent\<R>](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html) has [set](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.set) and [update](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.update) methods to modify the underlying resource. Both of those methods write the updated resource to the disk before returning.
 
+## Prettifying
+
+It's a good idea to store some resources with a prettified format during development to easily observe/modify them.
+
+You can use `pretty` feature to enable prettified textual formats:
+
+```toml
+[features]
+debug = ["bevy-persistent/pretty"]
+```
+
+And in your game:
+
+```rust
+fn setup(mut commands: Commands) {
+    let config_dir = dirs::config_dir().unwrap().join("your-amazing-game");
+    commands.insert_resource(
+        Persistent::<KeyBindings>::builder()
+            .name("key bindings")
+            .format({
+                #[cfg(feature = "debug")]
+                {
+                    StorageFormat::JsonPretty
+                }
+                #[cfg(not(feature = "debug"))]
+                {
+                    StorageFormat::Json
+                }
+            })
+            .path(config_dir.join("key-bindings.toml"))
+            .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+            .build(),
+    )
+}
+```
+
+Then you can develop your game using:
+
+```shell
+cargo run --features debug
+```
+
+And to release your game, you can compile using:
+
+```shell
+cargo build --release
+```
+
 ## Examples
 
 There are a few examples that you can run directly and play around with in the [examples](https://github.com/umut-sahin/bevy-persistent/tree/main/examples) folder.

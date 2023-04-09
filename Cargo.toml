@@ -25,10 +25,11 @@ dirs = { version = "5.0" }
 tempfile = { version = "3.4" }
 
 [features]
-all = ["bincode", "ini", "json", "ron", "toml", "yaml"]
+all = ["bincode", "ini", "json", "pretty", "ron", "toml", "yaml"]
 default = []
 ini = ["serde_ini"]
 json = ["serde_json"]
+pretty = []
 yaml = ["serde_yaml"]
 
 [package.metadata.docs.rs]
