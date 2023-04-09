@@ -20,6 +20,6 @@ compile_error!(concat!(r#"no storage formats are selected!
 "#));
 
 pub mod builder;
+pub mod format;
 pub mod persistent;
 pub mod prelude;
-pub mod storage;

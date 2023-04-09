@@ -23,8 +23,8 @@ fn test_builder_build() -> anyhow::Result<()> {
     assert!(path.exists());
 
     assert_eq!(resource.name(), name);
-    assert_eq!(resource.path(), path);
     assert_eq!(resource.format(), format);
+    assert_eq!(resource.path(), path);
     assert_eq!(resource.get(), &default);
 
     Ok(())
