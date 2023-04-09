@@ -2,6 +2,7 @@ mod common;
 use common::*;
 
 #[test]
+#[cfg(feature = "toml")]
 fn test_builder_build() -> anyhow::Result<()> {
     let tempdir = tempfile::tempdir()?;
 
@@ -43,12 +44,14 @@ fn test_builder_no_path() {
 
 #[test]
 #[should_panic(expected = "persistent resource path is not set")]
+#[cfg(feature = "toml")]
 fn test_builder_no_format() {
     Persistent::<KeyBindings>::builder().name("key bindings").format(StorageFormat::Toml).build();
 }
 
 #[test]
 #[should_panic(expected = "persistent resource default is not set")]
+#[cfg(feature = "toml")]
 fn test_builder_no_default() {
     Persistent::<KeyBindings>::builder()
         .name("key bindings")

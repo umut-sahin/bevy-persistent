@@ -2,6 +2,7 @@ mod common;
 use common::*;
 
 #[test]
+#[cfg(feature = "toml")]
 fn create_non_existing() -> anyhow::Result<()> {
     let tempdir = tempfile::tempdir()?;
 
@@ -35,6 +36,7 @@ fn create_non_existing() -> anyhow::Result<()> {
 }
 
 #[test]
+#[cfg(feature = "toml")]
 fn create_existing() -> anyhow::Result<()> {
     let tempdir = tempfile::tempdir()?;
 
@@ -70,6 +72,7 @@ fn create_existing() -> anyhow::Result<()> {
 }
 
 #[test]
+#[cfg(feature = "toml")]
 fn set() -> anyhow::Result<()> {
     let tempdir = tempfile::tempdir()?;
 
@@ -116,6 +119,7 @@ fn set() -> anyhow::Result<()> {
 }
 
 #[test]
+#[cfg(feature = "toml")]
 fn update() -> anyhow::Result<()> {
     let tempdir = tempfile::tempdir()?;
 
