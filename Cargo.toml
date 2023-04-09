@@ -23,6 +23,8 @@ toml = { version = "0.7", optional = true }
 [dev-dependencies]
 anyhow = { version = "1.0" }
 dirs = { version = "5.0" }
+
+[target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
 tempfile = { version = "3.4" }
 
 [features]
