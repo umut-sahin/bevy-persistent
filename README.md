@@ -44,7 +44,7 @@ use bevy_persistent::prelude::*;
 
 ### Definition
 
-You need to define the [Resource](https://docs.rs/bevy/latest/bevy/ecs/system/trait.Resource.html) you want to persist, and it needs to implement [Serialize](https://docs.rs/serde/latest/serde/trait.Serialize.html) and [Deserialize](https://docs.rs/serde/latest/serde/trait.Deserialize.html) traits  from [serde](https://github.com/serde-rs/serde).
+You need to define the [Resource](https://docs.rs/bevy/latest/bevy/ecs/system/trait.Resource.html) you want to persist, and it needs to implement [Serialize](https://docs.rs/serde/latest/serde/trait.Serialize.html) and [Deserialize](https://docs.rs/serde/latest/serde/trait.Deserialize.html) traits from [serde](https://github.com/serde-rs/serde).
 
 ```rust
 #[derive(Resource, Serialize, Deserialize)]
