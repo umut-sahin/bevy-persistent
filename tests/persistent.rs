@@ -9,20 +9,16 @@ mod native {
     #[cfg(feature = "toml")]
     fn create_non_existing() -> anyhow::Result<()> {
         let tempdir = tempfile::tempdir()?;
+        let path = tempdir.path().join("key-bindings.toml");
 
         let name = "key bindings";
         let format = StorageFormat::Toml;
-        let path = tempdir.path().join("key-bindings.toml");
+        let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
 
         assert!(!path.exists());
 
-        let resource = Persistent::<KeyBindings>::builder()
-            .name(name)
-            .format(format)
-            .path(&path)
-            .default(default)
-            .build();
+        let resource = Persistent::new(name, format, storage, default);
 
         assert!(path.exists());
 
@@ -43,10 +39,11 @@ mod native {
     #[cfg(feature = "toml")]
     fn create_existing() -> anyhow::Result<()> {
         let tempdir = tempfile::tempdir()?;
+        let path = tempdir.path().join("key-bindings.toml");
 
         let name = "key bindings";
         let format = StorageFormat::Toml;
-        let path = tempdir.path().join("key-bindings.toml");
+        let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
 
         let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
@@ -55,12 +52,7 @@ mod native {
         std::fs::write(&path, &existing_content)?;
         assert!(path.exists());
 
-        let resource = Persistent::<KeyBindings>::builder()
-            .name(name)
-            .format(format)
-            .path(&path)
-            .default(default)
-            .build();
+        let resource = Persistent::new(name, format, storage, default);
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -79,20 +71,16 @@ mod native {
     #[cfg(feature = "toml")]
     fn set() -> anyhow::Result<()> {
         let tempdir = tempfile::tempdir()?;
+        let path = tempdir.path().join("key-bindings.toml");
 
         let name = "key bindings";
         let format = StorageFormat::Toml;
-        let path = tempdir.path().join("key-bindings.toml");
+        let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::<KeyBindings>::builder()
-            .name(name)
-            .format(format)
-            .path(&path)
-            .default(default)
-            .build();
+        let mut resource = Persistent::new(name, format, storage, default);
 
         assert!(path.exists());
 
@@ -126,20 +114,16 @@ mod native {
     #[cfg(feature = "toml")]
     fn update() -> anyhow::Result<()> {
         let tempdir = tempfile::tempdir()?;
+        let path = tempdir.path().join("key-bindings.toml");
 
         let name = "key bindings";
         let format = StorageFormat::Toml;
-        let path = tempdir.path().join("key-bindings.toml");
+        let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::<KeyBindings>::builder()
-            .name(name)
-            .format(format)
-            .path(&path)
-            .default(default)
-            .build();
+        let mut resource = Persistent::new(name, format, storage, default);
 
         assert!(path.exists());
 
@@ -178,20 +162,16 @@ mod native {
     #[cfg(feature = "toml")]
     fn persist() -> anyhow::Result<()> {
         let tempdir = tempfile::tempdir()?;
+        let path = tempdir.path().join("key-bindings.toml");
 
         let name = "key bindings";
         let format = StorageFormat::Toml;
-        let path = tempdir.path().join("key-bindings.toml");
+        let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::<KeyBindings>::builder()
-            .name(name)
-            .format(format)
-            .path(&path)
-            .default(default)
-            .build();
+        let mut resource = Persistent::new(name, format, storage, default);
 
         assert!(path.exists());
 
