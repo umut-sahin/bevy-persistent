@@ -22,6 +22,6 @@ pub(crate) use std::{
 };
 
 pub use crate::{
+    format::StorageFormat,
     persistent::Persistent,
-    storage::StorageFormat,
 };

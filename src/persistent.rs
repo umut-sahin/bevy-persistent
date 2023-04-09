@@ -13,21 +13,21 @@ use crate::prelude::*;
 #[derive(Debug, Resource)]
 pub struct Persistent<R: Resource + Serialize + DeserializeOwned> {
     pub(crate) name: String,
+    pub(crate) format: StorageFormat,
     pub(crate) path: PathBuf,
-    pub(crate) storage: StorageFormat,
     pub(crate) resource: R,
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Creates a persistent resource builder.
     pub fn builder() -> PersistentBuilder<R> {
-        PersistentBuilder { name: None, path: None, storage: None, default: None }
+        PersistentBuilder { name: None, format: None, path: None, default: None }
     }
 
     /// Creates a persistent resource.
     pub fn new(
         name: impl ToString,
-        storage: StorageFormat,
+        format: StorageFormat,
         path: impl Into<PathBuf>,
         default: R,
     ) -> Persistent<R> {
@@ -38,11 +38,11 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
         if !path.exists() {
             let resource = default;
             let serialized_resource =
-                if let Some(serialized_resource) = storage.serialize(&name, &resource) {
+                if let Some(serialized_resource) = format.serialize(&name, &resource) {
                     serialized_resource
                 } else {
                     // serialization in the condition will log errors
-                    return Persistent { name, path, storage, resource };
+                    return Persistent { name, path, format, resource };
                 };
 
             if let Some(parent) = path.parent() {
@@ -66,20 +66,20 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 })
                 .ok();
 
-            return Persistent { name, path, storage, resource };
+            return Persistent { name, path, format, resource };
         }
 
         log::info!("loading {} from {:?}", name, path);
 
         let resource = match std::fs::read(&path) {
-            Ok(content) => storage.deserialize(&name, &content).unwrap_or(default),
+            Ok(content) => format.deserialize(&name, &content).unwrap_or(default),
             Err(error) => {
                 log::warn!("failed to read {}: {}", name, error);
-                return Persistent { name, path, storage, resource: default };
+                return Persistent { name, path, format, resource: default };
             },
         };
 
-        Persistent { name, path, storage, resource }
+        Persistent { name, path, format, resource }
     }
 }
 
@@ -91,7 +91,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
 
     /// Gets the storage format of the resource.
     pub fn format(&self) -> StorageFormat {
-        self.storage
+        self.format
     }
 
     /// Gets the path of the resource.
@@ -131,7 +131,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Writes the resource to the disk.
     pub fn persist(&self) {
-        if let Some(serialized_resource) = self.storage.serialize(self.name(), &self.resource) {
+        if let Some(serialized_resource) = self.format.serialize(self.name(), &self.resource) {
             std::fs::OpenOptions::new()
                 .write(true)
                 .truncate(true)

@@ -5,8 +5,8 @@ use crate::prelude::*;
 /// A builder for a persistent resource.
 pub struct PersistentBuilder<R: Resource + Serialize + DeserializeOwned> {
     pub(crate) name: Option<String>,
+    pub(crate) format: Option<StorageFormat>,
     pub(crate) path: Option<PathBuf>,
-    pub(crate) storage: Option<StorageFormat>,
     pub(crate) default: Option<R>,
 }
 
@@ -17,9 +17,9 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         self
     }
 
-    /// Sets the format of the resource.
+    /// Sets the storage format of the resource.
     pub fn format(mut self, format: StorageFormat) -> PersistentBuilder<R> {
-        self.storage = Some(format);
+        self.format = Some(format);
         self
     }
 
@@ -46,7 +46,7 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         if self.name.is_none() {
             panic!("persistent resource name is not set");
         }
-        if self.storage.is_none() {
+        if self.format.is_none() {
             panic!("persistent resource format is not set");
         }
         if self.path.is_none() {
@@ -59,7 +59,7 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         #[allow(unreachable_code)]
         Persistent::new(
             self.name.unwrap(),
-            self.storage.unwrap(),
+            self.format.unwrap(),
             self.path.unwrap(),
             self.default.unwrap(),
         )
