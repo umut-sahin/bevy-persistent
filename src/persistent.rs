@@ -71,8 +71,8 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
 
         log::info!("loading {} from {:?}", name, path);
 
-        let resource = match std::fs::read_to_string(&path) {
-            Ok(content) => storage.deserialize(&name, content.as_bytes()).unwrap_or(default),
+        let resource = match std::fs::read(&path) {
+            Ok(content) => storage.deserialize(&name, &content).unwrap_or(default),
             Err(error) => {
                 log::warn!("failed to read {}: {}", name, error);
                 return Persistent { name, path, storage, resource: default };
