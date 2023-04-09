@@ -23,3 +23,4 @@ pub mod builder;
 pub mod format;
 pub mod persistent;
 pub mod prelude;
+pub mod storage;

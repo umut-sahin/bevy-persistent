@@ -24,7 +24,7 @@ fn test_builder_build() -> anyhow::Result<()> {
 
     assert_eq!(resource.name(), name);
     assert_eq!(resource.format(), format);
-    assert_eq!(resource.path(), path);
+    assert_eq!(resource.storage(), &Storage::Filesystem { path });
     assert_eq!(resource.get(), &default);
 
     Ok(())

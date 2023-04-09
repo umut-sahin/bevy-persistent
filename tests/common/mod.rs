@@ -1,5 +1,8 @@
 pub use bevy::prelude::*;
-pub use bevy_persistent::prelude::*;
+pub use bevy_persistent::{
+    prelude::*,
+    storage::Storage,
+};
 pub use serde::{
     Deserialize,
     Serialize,

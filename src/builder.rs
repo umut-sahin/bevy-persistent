@@ -56,12 +56,13 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
             panic!("persistent resource default is not set");
         }
 
-        #[allow(unreachable_code)]
-        Persistent::new(
-            self.name.unwrap(),
-            self.format.unwrap(),
-            self.path.unwrap(),
-            self.default.unwrap(),
-        )
+        let name = self.name.unwrap();
+        let format = self.format.unwrap();
+        let path = self.path.unwrap();
+        let default = self.default.unwrap();
+
+        let storage = Storage::Filesystem { path: path.canonicalize().unwrap_or(path) };
+
+        Persistent::new(name, format, storage, default)
     }
 }

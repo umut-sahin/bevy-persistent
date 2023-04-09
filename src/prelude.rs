@@ -1,6 +1,12 @@
 //! Preludes of the crate.
 
-pub(crate) use crate::builder::PersistentBuilder;
+pub(crate) use crate::{
+    builder::PersistentBuilder,
+    storage::{
+        Storage,
+        StorageError,
+    },
+};
 pub(crate) use bevy::{
     log,
     prelude::*,
@@ -10,16 +16,17 @@ pub(crate) use serde::{
     Serialize,
 };
 pub(crate) use std::{
-    io::Write,
+    fmt::{
+        self,
+        Display,
+    },
     ops::{
         Deref,
         DerefMut,
     },
-    path::{
-        Path,
-        PathBuf,
-    },
+    path::PathBuf,
 };
+pub(crate) use thiserror::Error;
 
 pub use crate::{
     format::StorageFormat,
