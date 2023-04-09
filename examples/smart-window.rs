@@ -23,11 +23,11 @@ fn main() {
     let mut app = App::new();
     app.add_plugin(LogPlugin::default());
 
-    let config_dir = dirs::config_dir().unwrap().join("bevy-persistent").join("examples");
+    let state_dir = dirs::state_dir().unwrap().join("bevy-persistent").join("examples");
     let persistent_window_state = Persistent::<WindowState>::builder()
         .name("window state")
         .format(StorageFormat::Toml)
-        .path(config_dir.join("smart-windows").join("window-state.toml"))
+        .path(state_dir.join("smart-windows").join("window-state.toml"))
         .default(WindowState { position: (0, 0), size: (800, 600) })
         .build();
 
