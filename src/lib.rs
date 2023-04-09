@@ -24,3 +24,13 @@ pub mod format;
 pub mod persistent;
 pub mod prelude;
 pub mod storage;
+
+pub use crate::{
+    builder::PersistentBuilder,
+    format::StorageFormat,
+    persistent::Persistent,
+    storage::{
+        Storage,
+        StorageError,
+    },
+};
