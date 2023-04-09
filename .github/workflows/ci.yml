@@ -40,6 +40,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           components: rustfmt, clippy
+          target: wasm32-unknown-unknown
           override: true
 
       - name: Rustfmt
@@ -54,7 +55,13 @@ jobs:
           command: clippy
           args: --all --features all -- --deny warnings
 
-  test:
+      - name: Clippy (Wasm)
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all --features all --target wasm32-unknown-unknown -- --deny warnings
+
+  test-native:
     strategy:
       matrix:
         os:
@@ -102,9 +109,96 @@ jobs:
           command: test
           args: --all --features all
 
+  test-chrome-firefox:
+    name: Test (chrome, firefox)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Platform Dependencies
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev firefox
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Cache Rust
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build (Wasm)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all --features all --target wasm32-unknown-unknown
+
+      - name: Test (Chrome)
+        run: wasm-pack test --chrome --headless --features all
+
+      - name: Test (Firefox)
+        run: wasm-pack test --firefox --headless --features all
+
+  test-safari:
+    name: Test (safari)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache Rust
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-${{ matrix.rust }}-${{ hashFiles('Cargo.toml') }}
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build (Wasm)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all --features all --target wasm32-unknown-unknown
+
+      - name: Test (Safari)
+        run: wasm-pack test --safari --headless --features all
+
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [conformance, test]
+    needs: [conformance, test-native, test-chrome-firefox, test-safari]
 
     name: Publish
     runs-on: "ubuntu-latest"
