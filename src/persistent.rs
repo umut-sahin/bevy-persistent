@@ -108,7 +108,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Sets the resource.
     ///
-    /// Changes are synchronizes with the disk immediately.
+    /// Changes are synchronized with the disk immediately.
     pub fn set(&mut self, new_resource: R) {
         self.resource = new_resource;
         self.sync();
@@ -116,7 +116,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
 
     /// Updates the resource.
     ///
-    /// Changes are synchronizes with the disk immediately.
+    /// Changes are synchronized with the disk immediately.
     pub fn update(&mut self, updater: impl Fn(&mut R)) {
         updater(&mut self.resource);
         self.sync();
