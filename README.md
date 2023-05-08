@@ -238,6 +238,171 @@ To run the examples in a browser using WebAssembly, you can use [wasm-server-run
 cargo run --release --features all --target wasm32-unknown-unknown --example name-of-the-example
 ```
 
+## Relation to
+
+### bevy_pkv
+
+[bevy_pkv](https://github.com/johanhelsing/bevy_pkv) is a generic key value store for [Bevy](https://bevyengine.org/). It is an excellent library, and it can be used as an alternative to [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/). Here are some of the differences between the two libraries!
+
+- **bevy_pkv is a lot more flexible**
+
+Let's say you want to have two different `Settings` for two different users.
+
+For the time being, this is not straightforward to do with [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) because `Persistent<R>` is a resource, there can only be a single instance of a resource. So you can't have two `Persistent<Settings>` in the same app. You can work around this by defining a custom struct (e.g., `Persistent<AllSettings>`), using a tuple (e.g., `Persistent<(Settings, Settings)>`), using a vector (e.g., `Persistent<Vec<Settings>>`), or using a hashmap (e.g., `Persistent<HashMap<Settings>>`).
+
+This is very easy to do with [bevy_pkv](https://github.com/johanhelsing/bevy_pkv)!
+
+```rust
+fn setup(mut pkv: ResMut<PkvStore>) {
+  // ...
+  let blue_settings: Settings = ...;
+  let red_settings: Settings = ...;
+  // ...
+  pkv.set("blue-settings", &blue_settings).unwrap();
+  pkv.set("red-settings", &red_settings).unwrap();
+  // ...
+}
+
+fn utilize_settings(pkv: Res<PkvStore>) {
+  // ...
+  let blue_settings: Settings = pkv.get("blue-settings").unwrap();
+  let red_settings: Settings = pkv.get("red-settings").unwrap();
+  // ...
+}
+```
+
+Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can provide a solution to this problem at some point if it's requested by the community! I really like the idea of providing `PersistentVec<R>` and `PersistentMap<K, R> where K: impl AsRef<str>`.
+
+```rust
+fn setup(mut settings: ResMut<PersistentMap<&'static str, Settings>>) {
+  // ...
+  let blue_settings: Settings = ...;
+  let red_settings: Settings = ...;
+  // ...
+  settings.insert("blue", blue_settings)?;
+  settings.insert("red", red_settings)?;
+  // ...
+
+}
+
+fn utilize_settings(settings: Res<PersistentMap<&'static str, Settings>>) {
+  // ...
+  let blue_settings: &Settings = settings["blue"];
+  let red_settings: &Settings = settings["red"];
+  // ...
+}
+```
+
+- **bevy_pkv has better error handling**
+
+[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) logs the errors and then ignores them for the time being. This was initially done for simplicity, but it wasn't the right choice. It'll be improved in the future but, for now, if you want to handle errors in a specific way, [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) is the better choice.
+
+- **bevy_pkv is using extremely optimized key-value storage engines (in native apps)**
+
+As far as I can see, the current version of [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) has 2 storage options, [sled](https://sled.rs/) and [RocksDB](https://rocksdb.org/), which are extremely well optimized. This means if the persistent objects are updated frequently, [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) performance will be outstanding!
+
+[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) on the other hand stores each persistent object as a separate file, which means persisting objects trigger direct disk writes! This is okay for most use cases (e.g., settings or manual saves), but if your application requires very frequent updates, [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) is the way to go!
+
+Mandatory note on this, please please please profile before making decisions for performance reasons!
+
+- **bevy_pkv supports multiple concurrent applications running at the same time (in native apps)**
+
+I'm not 100% sure about this, but as far as I know, both [sled](https://sled.rs/) and [RocksDB](https://rocksdb.org/) support concurrent reads and writes from different processes, which means if there are multiple instances of the application running, it'll work with proper concurrency semantics.
+
+[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) on the other hand reads the object from the disk during setup and then updates it as the application runs. So whichever instance runs the last, its state will persist for the next session! Furthermore, changes made in one instance will not be visible to other instances.
+
+Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can provide a solution to this problem at some point if it's requested by the community! I really like the idea of providing `.refresh()` method for `Persistent<R>`.
+
+```rust
+fn refresh_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
+  key_bindings.refresh();
+}
+```
+
+This system would read the settings from the disk again to be up-to-date with external modifications!
+
+- **bevy_pkv parses the objects on each read**
+
+Writes being extremely optimized, reads can be slow in [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) because reading a persistent object requires parsing, on each read!
+
+In [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/), reads are basically free as `Persistent<R>` is just a wrapper around the actual object. Though this comes with the drawback of memory usage, as objects are always kept in memory.
+
+Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can provide a solution to this problem at some point if it's requested by the community! I really like the idea of providing `.load()` and `.unload()` methods for `Persistent<R>`.
+
+```rust
+fn unload_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
+  key_bindings.unload();
+}
+
+fn load_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
+  key_bindings.load();
+}
+
+fn utilize_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
+  let jump_key = key_bindings.jump; // this would panic if the resource is unloaded
+}
+```
+
+Again, always profile before making decisions for performance reasons!
+
+- **bevy_pkv doesn't do automatic management**
+
+With [bevy_pkv](https://github.com/johanhelsing/bevy_pkv), modifying the object and making the changes persistent is always two different steps.
+
+```rust
+fn modify_key_bindings(mut pkv: ResMut<PkvStore>) {
+  let mut key_bindings = pkv.get::<KeyBindings>("key-bindings");
+  key_bindings.crouch = KeyCode::LControl;
+  pkv.set("key-bindings", &key_bindings)
+}
+```
+
+[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) on the other hand provides APIs to automate this process (see [Modification](#modification)).
+
+- **bevy_pkv makes external edits very hard (in native apps)**
+
+[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) stores each persistent object as a separate file in the specified format. If a textual format is used, the object becomes extremely easy to edit! The example in [Creation](#creation) will create `key-bindings.toml` in the specified location with the following contents:
+
+```toml
+jump = "Space"
+crouch = "C"
+```
+
+You can easily change this file to:
+
+```toml
+jump = "Space"
+crouch = "LControl"
+```
+
+And it'd work perfectly in the next run!
+
+[bevy_pkv](https://github.com/johanhelsing/bevy_pkv) on the other hand stores the objects in a single database in a binary format, which is more efficient but not suitable external modification.
+
+- **bevy_pkv makes storing objects in different locations a bit inconvenient (in native apps)**
+
+This one is kinda like the one above, but it's more about how things are structured to satisfy your needs! For example, you may want to synchronize user saves through [Steam](https://store.steampowered.com/) but not user settings as they need to be different across machines.
+
+This scenario is doable with [bevy_pkv](https://github.com/johanhelsing/bevy_pkv), but it requires creating new types that wrap `PkvStore` within them and using those instead of a single `PkvStore`, which is a little inconvenient. It's very easy with [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) however as you can structure your persistent objects however you see fit in the filesystem using a single type!
+
+- **bevy_pkv only supports JSON and Binary storage formats**
+
+[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) supports a wide variety of storage formats! If you're porting a game from another engine to [Bevy](https://bevyengine.org/) you might be able to just define the structure of some objects (e.g., settings, saves) and let [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) handle the rest!
+
+With [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) however, you need to create a transformation layer as it's not directly compatible with any of the widely used formats.
+
+- **bevy_pkv is not type safe**
+
+[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) integrates with type system of [Bevy](https://bevyengine.org/). Types of persistent resources are specified in system definitions and everything is handled by [Bevy](https://bevyengine.org/).
+
+[bevy_pkv](https://github.com/johanhelsing/bevy_pkv) on the other hand provides a single resource which you can use to query a persistent key value database with any type in the runtime. This is very flexible, but you need to specify types on each access, so it's error-prone. Also, you can't see what the system is doing easily without looking to the function body.
+
+- **bevy_pkv can obstruct parallelism**
+
+Each persistent resource in [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) is a separate resource. Which means systems can be scheduled to access/modify different persistent resources at the same time.
+
+This cannot be the case with [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) as it has a single resource type (`pkv: Res<PkvStore>` or `mut pkv: ResMut<PkvStore>`) for all systems, which prevents concurrent reads/writes on different persistent objects.
+
 ## License
 
 [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) is free, open source and permissively licensed, just like [Bevy](https://bevyengine.org/)!
