@@ -42,7 +42,8 @@ fn setup(mut commands: Commands) {
             .format(StorageFormat::Toml)
             .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
-            .build(),
+            .build()
+            .expect("failed to initialize key bindings"),
     )
 }
 
@@ -51,13 +52,15 @@ fn show_initial_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
 }
 
 fn switch_crouch_key(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-    key_bindings.update(|key_bindings| {
-        key_bindings.crouch = match key_bindings.crouch {
-            KeyCode::C => KeyCode::LControl,
-            KeyCode::LControl => KeyCode::C,
-            _ => unimplemented!(),
-        }
-    });
+    key_bindings
+        .update(|key_bindings| {
+            key_bindings.crouch = match key_bindings.crouch {
+                KeyCode::C => KeyCode::LControl,
+                KeyCode::LControl => KeyCode::C,
+                _ => unimplemented!(),
+            }
+        })
+        .expect("failed to update key bindings");
 }
 
 fn show_final_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {

@@ -20,6 +20,7 @@ compile_error!(concat!(r#"no storage formats are selected!
 "#));
 
 pub mod builder;
+pub mod error;
 pub mod format;
 pub mod persistent;
 pub mod prelude;
@@ -27,10 +28,8 @@ pub mod storage;
 
 pub use crate::{
     builder::PersistentBuilder,
+    error::PersistenceError,
     format::StorageFormat,
     persistent::Persistent,
-    storage::{
-        Storage,
-        StorageError,
-    },
+    storage::Storage,
 };

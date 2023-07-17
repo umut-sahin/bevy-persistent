@@ -45,7 +45,8 @@ fn main() {
                 .format(StorageFormat::Bincode)
                 .path(state_dir.join("game-state.bin"))
                 .default(GameState::default())
-                .build(),
+                .build()
+                .expect("failed to initialize game state"),
         )
         .add_startup_system(setup)
         .add_system(player_movement)
@@ -117,6 +118,6 @@ fn autosave(
 ) {
     autosave.timer.tick(time.delta());
     if autosave.timer.finished() {
-        game_state.persist();
+        game_state.persist().ok();
     }
 }

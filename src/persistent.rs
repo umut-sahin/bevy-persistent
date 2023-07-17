@@ -30,24 +30,22 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
         format: StorageFormat,
         storage: Storage,
         default: R,
-    ) -> Persistent<R> {
+    ) -> Result<Persistent<R>, PersistenceError> {
         let name = name.to_string();
 
         if !storage.occupied() {
             let resource = default;
 
-            storage
-                .initialize()
-                .map_err(|error| {
-                    // initialize can only return error for filesystem storage
-                    log::warn!(
-                        "failed to create the parent directory for default {} at {}: {}",
-                        name,
-                        storage,
-                        error,
-                    );
-                })
-                .ok();
+            storage.initialize().map_err(|error| {
+                // initialize can only return error for filesystem storage
+                log::warn!(
+                    "failed to create the parent directory for default {} at {}: {}",
+                    name,
+                    storage,
+                    error,
+                );
+                error
+            })?;
 
             storage
                 .write(&name, format, &resource)
@@ -55,28 +53,27 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                     log::info!("saved default {} to {}", name, storage);
                 })
                 .map_err(|error| {
-                    if matches!(error, StorageError::Serde) {
-                        // serialization errors are already logged
-                        return;
+                    // serialization errors are already logged
+                    if !error.is_serde() {
+                        log::warn!("failed to save default {} to {}: {}", name, storage, error);
                     }
-                    log::warn!("failed to save default {} to {}: {}", name, storage, error);
-                })
-                .ok();
+                    error
+                })?;
 
-            return Persistent { name, format, storage, resource };
+            return Ok(Persistent { name, format, storage, resource });
         }
 
         log::info!("loading {} from {}", name, storage);
 
-        let resource = match storage.read(&name, format) {
-            Ok(resource) => resource,
-            Err(error) => {
+        let resource = storage.read(&name, format).map_err(|error| {
+            // serialization errors are already logged
+            if !error.is_serde() {
                 log::warn!("failed to read {}: {}", name, error);
-                return Persistent { name, format, storage, resource: default };
-            },
-        };
+            }
+            error
+        })?;
 
-        Persistent { name, format, storage, resource }
+        Ok(Persistent { name, format, storage, resource })
     }
 }
 
@@ -111,36 +108,35 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Sets the resource.
     ///
     /// Changes are synchronized with the underlying storage immediately.
-    pub fn set(&mut self, new_resource: R) {
+    pub fn set(&mut self, new_resource: R) -> Result<(), PersistenceError> {
         self.resource = new_resource;
-        self.persist();
+        self.persist()
     }
 
     /// Updates the resource.
     ///
     /// Changes are synchronized with the underlying storage immediately.
-    pub fn update(&mut self, updater: impl Fn(&mut R)) {
+    pub fn update(&mut self, updater: impl Fn(&mut R)) -> Result<(), PersistenceError> {
         updater(&mut self.resource);
-        self.persist();
+        self.persist()
     }
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Writes the resource to the underlying storage.
-    pub fn persist(&self) {
+    pub fn persist(&self) -> Result<(), PersistenceError> {
         self.storage
             .write(&self.name, self.format, &self.resource)
             .map(|_| {
                 log::info!("saved new {} to {}", self.name, self.storage);
             })
             .map_err(|error| {
-                if matches!(error, StorageError::Serde) {
-                    // serialization errors are logged in format module
-                    return;
+                // serialization errors are logged in format module
+                if !error.is_serde() {
+                    log::warn!("failed to save new {} to {}: {}", self.name, self.storage, error);
                 }
-                log::warn!("failed to save new {} to {}: {}", self.name, self.storage, error);
+                error
             })
-            .ok();
     }
 }
 

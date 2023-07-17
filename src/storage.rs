@@ -15,7 +15,7 @@ pub enum Storage {
 
 impl Storage {
     /// Initializes the storage.
-    pub fn initialize(&self) -> Result<(), StorageError> {
+    pub fn initialize(&self) -> Result<(), PersistenceError> {
         match self {
             #[cfg(not(target_family = "wasm"))]
             Storage::Filesystem { path } => {
@@ -60,16 +60,12 @@ impl Storage {
         &self,
         name: &str,
         format: StorageFormat,
-    ) -> Result<R, StorageError> {
-        Ok(match self {
+    ) -> Result<R, PersistenceError> {
+        match self {
             #[cfg(not(target_family = "wasm"))]
             Storage::Filesystem { path } => {
                 let bytes = std::fs::read(path)?;
-                if let Some(resource) = format.deserialize(name, &bytes) {
-                    resource
-                } else {
-                    return Err(StorageError::Serde);
-                }
+                format.deserialize::<R>(name, &bytes)
             },
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
@@ -90,17 +86,11 @@ impl Storage {
                 #[cfg(feature = "bincode")]
                 if format == StorageFormat::Bincode {
                     let bytes = LocalStorage::get::<Vec<u8>>(key)?;
-                    return match format.deserialize::<R>(name, &bytes) {
-                        Some(resource) => Ok(resource),
-                        None => Err(StorageError::Serde),
-                    };
+                    return format.deserialize::<R>(name, &bytes);
                 }
 
                 let content = LocalStorage::get::<String>(key)?;
-                match format.deserialize::<R>(name, content.as_bytes()) {
-                    Some(resource) => resource,
-                    None => return Err(StorageError::Serde),
-                }
+                format.deserialize::<R>(name, content.as_bytes())
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
@@ -121,19 +111,13 @@ impl Storage {
                 #[cfg(feature = "bincode")]
                 if format == StorageFormat::Bincode {
                     let bytes = SessionStorage::get::<Vec<u8>>(key)?;
-                    return match format.deserialize::<R>(name, &bytes) {
-                        Some(resource) => Ok(resource),
-                        None => Err(StorageError::Serde),
-                    };
+                    return format.deserialize::<R>(name, &bytes);
                 }
 
                 let content = SessionStorage::get::<String>(key)?;
-                match format.deserialize::<R>(name, content.as_bytes()) {
-                    Some(resource) => resource,
-                    None => return Err(StorageError::Serde),
-                }
+                format.deserialize::<R>(name, content.as_bytes())
             },
-        })
+        }
     }
 
     /// Writes a resource to the storage.
@@ -142,21 +126,19 @@ impl Storage {
         name: &str,
         format: StorageFormat,
         resource: &R,
-    ) -> Result<(), StorageError> {
+    ) -> Result<(), PersistenceError> {
         match self {
             #[cfg(not(target_family = "wasm"))]
             Storage::Filesystem { path } => {
-                if let Some(bytes) = format.serialize(name, resource) {
-                    use std::io::Write;
-                    std::fs::OpenOptions::new()
-                        .create(true)
-                        .truncate(true)
-                        .write(true)
-                        .open(path)
-                        .and_then(|mut file| file.write_all(&bytes))?;
-                } else {
-                    return Err(StorageError::Serde);
-                }
+                let bytes = format.serialize(name, resource)?;
+
+                use std::io::Write;
+                std::fs::OpenOptions::new()
+                    .create(true)
+                    .truncate(true)
+                    .write(true)
+                    .open(path)
+                    .and_then(|mut file| file.write_all(&bytes))?;
             },
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
@@ -178,23 +160,18 @@ impl Storage {
 
                 #[cfg(feature = "bincode")]
                 if format == StorageFormat::Bincode {
-                    if let Some(bytes) = format.serialize(name, resource) {
-                        LocalStorage::set::<&[u8]>(key, &bytes)?;
-                    } else {
-                        return Err(StorageError::Serde);
-                    }
+                    let bytes = format.serialize(name, resource)?;
+                    LocalStorage::set::<&[u8]>(key, &bytes)?;
                     return Ok(());
                 }
 
-                if let Some(bytes) = format.serialize(name, resource) {
-                    // unwrapping is okay in this case because
-                    // remaining storage formats all return a string
-                    // and that string is converted to bytes
-                    let string = std::str::from_utf8(&bytes).unwrap();
-                    LocalStorage::set::<&str>(key, string)?;
-                } else {
-                    return Err(StorageError::Serde);
-                }
+                let bytes = format.serialize(name, resource)?;
+
+                // unwrapping is okay in this case because
+                // remaining storage formats all return a string
+                // and that string is converted to bytes
+                let string = std::str::from_utf8(&bytes).unwrap();
+                LocalStorage::set::<&str>(key, string)?;
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
@@ -216,23 +193,18 @@ impl Storage {
 
                 #[cfg(feature = "bincode")]
                 if format == StorageFormat::Bincode {
-                    if let Some(bytes) = format.serialize(name, resource) {
-                        SessionStorage::set::<&[u8]>(key, &bytes)?;
-                    } else {
-                        return Err(StorageError::Serde);
-                    }
+                    let bytes = format.serialize(name, resource)?;
+                    SessionStorage::set::<&[u8]>(key, &bytes)?;
                     return Ok(());
                 }
 
-                if let Some(bytes) = format.serialize(name, resource) {
-                    // unwrapping is okay in this case because
-                    // remaining storage formats all return a string
-                    // and that string is converted to bytes
-                    let string = std::str::from_utf8(&bytes).unwrap();
-                    SessionStorage::set::<&str>(key, string)?;
-                } else {
-                    return Err(StorageError::Serde);
-                }
+                let bytes = format.serialize(name, resource)?;
+
+                // unwrapping is okay in this case because
+                // remaining storage formats all return a string
+                // and that string is converted to bytes
+                let string = std::str::from_utf8(&bytes).unwrap();
+                SessionStorage::set::<&str>(key, string)?;
             },
         }
         Ok(())
@@ -262,25 +234,4 @@ impl Display for Storage {
             },
         }
     }
-}
-
-/// A storage error.
-#[derive(Debug, Error)]
-pub enum StorageError {
-    #[error("(de)serialization failed")]
-    Serde,
-    #[cfg(not(target_family = "wasm"))]
-    #[error("{0}")]
-    Filesystem(
-        #[from]
-        #[source]
-        std::io::Error,
-    ),
-    #[cfg(target_family = "wasm")]
-    #[error("{0}")]
-    Browser(
-        #[from]
-        #[source]
-        gloo_storage::errors::StorageError,
-    ),
 }

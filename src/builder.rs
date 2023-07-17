@@ -42,7 +42,7 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
     /// # Panics
     ///
     /// Panics if `name`, `path`, `format` or `default` is not set.
-    pub fn build(self) -> Persistent<R> {
+    pub fn build(self) -> Result<Persistent<R>, PersistenceError> {
         if self.name.is_none() {
             panic!("persistent resource name is not set");
         }

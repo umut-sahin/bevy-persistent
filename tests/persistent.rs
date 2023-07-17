@@ -18,7 +18,7 @@ mod native {
 
         assert!(!path.exists());
 
-        let resource = Persistent::new(name, format, storage, default);
+        let resource = Persistent::new(name, format, storage, default)?;
 
         assert!(path.exists());
 
@@ -52,7 +52,7 @@ mod native {
         std::fs::write(&path, &existing_content)?;
         assert!(path.exists());
 
-        let resource = Persistent::new(name, format, storage, default);
+        let resource = Persistent::new(name, format, storage, default)?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -80,7 +80,7 @@ mod native {
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(path.exists());
 
@@ -95,7 +95,7 @@ mod native {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
-        resource.set(new_resource.clone());
+        resource.set(new_resource.clone())?;
 
         let expected_new_resource = new_resource;
         let actual_new_resource = resource.get();
@@ -123,7 +123,7 @@ mod native {
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(path.exists());
 
@@ -140,7 +140,7 @@ mod native {
         fn updater(key_bindings: &mut KeyBindings) {
             key_bindings.crouch = KeyCode::LControl;
         }
-        resource.update(updater);
+        resource.update(updater)?;
 
         let mut new_resource = expected_initial_resource;
         updater(&mut new_resource);
@@ -171,7 +171,7 @@ mod native {
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(path.exists());
 
@@ -203,7 +203,7 @@ mod native {
 
         assert_eq!(expected_new_content.trim(), actual_new_content.trim());
 
-        resource.persist();
+        resource.persist()?;
 
         let expected_final_content = toml::to_string(&expected_new_resource)?;
         let actual_final_content = std::fs::read_to_string(&path)?;
@@ -239,7 +239,7 @@ mod wasm {
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let resource = Persistent::new(name, format, storage, default);
+        let resource = Persistent::new(name, format, storage, default)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -274,7 +274,7 @@ mod wasm {
         LocalStorage::set(key, existing_content.as_str())?;
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
-        let resource = Persistent::new(name, format, storage, default);
+        let resource = Persistent::new(name, format, storage, default)?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -303,7 +303,7 @@ mod wasm {
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -318,7 +318,7 @@ mod wasm {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
-        resource.set(new_resource.clone());
+        resource.set(new_resource.clone())?;
 
         let expected_new_resource = new_resource;
         let actual_new_resource = resource.get();
@@ -347,7 +347,7 @@ mod wasm {
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -364,7 +364,7 @@ mod wasm {
         fn updater(key_bindings: &mut KeyBindings) {
             key_bindings.crouch = KeyCode::LControl;
         }
-        resource.update(updater);
+        resource.update(updater)?;
 
         let mut new_resource = expected_initial_resource;
         updater(&mut new_resource);
@@ -396,7 +396,7 @@ mod wasm {
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -428,7 +428,7 @@ mod wasm {
 
         assert_eq!(expected_new_content.trim(), actual_new_content.trim());
 
-        resource.persist();
+        resource.persist()?;
 
         let expected_final_content = toml::to_string(&expected_new_resource)?;
         let actual_final_content = LocalStorage::get::<String>(key)?;
@@ -453,7 +453,7 @@ mod wasm {
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let resource = Persistent::new(name, format, storage, default);
+        let resource = Persistent::new(name, format, storage, default)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -488,7 +488,7 @@ mod wasm {
         SessionStorage::set(key, existing_content.as_str())?;
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
-        let resource = Persistent::new(name, format, storage, default);
+        let resource = Persistent::new(name, format, storage, default)?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -517,7 +517,7 @@ mod wasm {
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -532,7 +532,7 @@ mod wasm {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
-        resource.set(new_resource.clone());
+        resource.set(new_resource.clone())?;
 
         let expected_new_resource = new_resource;
         let actual_new_resource = resource.get();
@@ -561,7 +561,7 @@ mod wasm {
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -578,7 +578,7 @@ mod wasm {
         fn updater(key_bindings: &mut KeyBindings) {
             key_bindings.crouch = KeyCode::LControl;
         }
-        resource.update(updater);
+        resource.update(updater)?;
 
         let mut new_resource = expected_initial_resource;
         updater(&mut new_resource);
@@ -610,7 +610,7 @@ mod wasm {
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default);
+        let mut resource = Persistent::new(name, format, storage, default)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -642,7 +642,7 @@ mod wasm {
 
         assert_eq!(expected_new_content.trim(), actual_new_content.trim());
 
-        resource.persist();
+        resource.persist()?;
 
         let expected_final_content = toml::to_string(&expected_new_resource)?;
         let actual_final_content = SessionStorage::get::<String>(key)?;
