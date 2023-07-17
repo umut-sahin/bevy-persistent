@@ -44,7 +44,7 @@ impl StorageFormat {
             #[cfg(feature = "bincode")]
             StorageFormat::Bincode => {
                 bincode::serialize(resource).map_err(|error| {
-                    log::warn!("failed to serialize {} to binary\n\n{}", name, error);
+                    log::warn!("failed to serialize {} to Bincode\n\n{}", name, error);
                     PersistenceError::BincodeSerialization(error)
                 })
             },
@@ -133,7 +133,7 @@ impl StorageFormat {
         #[allow(irrefutable_let_patterns)]
         if let StorageFormat::Bincode = self {
             return bincode::deserialize::<R>(serialized_resource).map_err(|error| {
-                log::warn!("failed to parse {} as binary\n\n{}", name, error);
+                log::warn!("failed to parse {} as Bincode\n\n{}", name, error);
                 PersistenceError::BincodeDeserialization(error)
             });
         }
@@ -141,7 +141,7 @@ impl StorageFormat {
         #[cfg(any(feature = "ini", feature = "json", feature = "toml", feature = "yaml"))]
         let serialized_resource_str =
             std::str::from_utf8(serialized_resource).map_err(|error| {
-                log::warn!("failed to parse {} as utf8 string\n\n{}", name, error);
+                log::warn!("failed to decode {} as UTF-8\n\n{}", name, error);
                 PersistenceError::Encoding(error)
             })?;
 
