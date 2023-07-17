@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 /// A storage.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Reflect)]
 pub enum Storage {
     #[cfg(not(target_family = "wasm"))]
     Filesystem { path: PathBuf },
