@@ -47,9 +47,8 @@ fn main() {
                 .default(GameState::default())
                 .build(),
         )
-        .add_startup_system(setup)
-        .add_system(player_movement)
-        .add_system(autosave.after(player_movement))
+        .add_systems(Startup, setup)
+        .add_systems(Update, (player_movement, autosave.after(player_movement)))
         .run();
 }
 

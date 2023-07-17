@@ -46,7 +46,7 @@ mod native {
         let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
 
-        let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+        let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         let existing_content = toml::to_string(&existing_resource)?;
 
         std::fs::write(&path, &existing_content)?;
@@ -94,7 +94,7 @@ mod native {
 
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
-        let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+        let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         resource.set(new_resource.clone());
 
         let expected_new_resource = new_resource;
@@ -138,7 +138,7 @@ mod native {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         fn updater(key_bindings: &mut KeyBindings) {
-            key_bindings.crouch = KeyCode::LControl;
+            key_bindings.crouch = KeyCode::ControlLeft;
         }
         resource.update(updater);
 
@@ -186,7 +186,7 @@ mod native {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         fn updater(key_bindings: &mut KeyBindings) {
-            key_bindings.crouch = KeyCode::LControl;
+            key_bindings.crouch = KeyCode::ControlLeft;
         }
         updater(resource.get_mut());
 
@@ -268,7 +268,7 @@ mod wasm {
         let storage = Storage::LocalStorage { key: key.to_owned() };
         let default = KeyBindings::default();
 
-        let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+        let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         let existing_content = toml::to_string(&existing_resource)?;
 
         LocalStorage::set(key, existing_content.as_str())?;
@@ -317,7 +317,7 @@ mod wasm {
 
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
-        let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+        let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         resource.set(new_resource.clone());
 
         let expected_new_resource = new_resource;
@@ -362,7 +362,7 @@ mod wasm {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         fn updater(key_bindings: &mut KeyBindings) {
-            key_bindings.crouch = KeyCode::LControl;
+            key_bindings.crouch = KeyCode::ControlLeft;
         }
         resource.update(updater);
 
@@ -411,7 +411,7 @@ mod wasm {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         fn updater(key_bindings: &mut KeyBindings) {
-            key_bindings.crouch = KeyCode::LControl;
+            key_bindings.crouch = KeyCode::ControlLeft;
         }
         updater(resource.get_mut());
 
@@ -482,7 +482,7 @@ mod wasm {
         let storage = Storage::SessionStorage { key: key.to_owned() };
         let default = KeyBindings::default();
 
-        let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+        let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         let existing_content = toml::to_string(&existing_resource)?;
 
         SessionStorage::set(key, existing_content.as_str())?;
@@ -531,7 +531,7 @@ mod wasm {
 
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
-        let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::LControl };
+        let new_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         resource.set(new_resource.clone());
 
         let expected_new_resource = new_resource;
@@ -576,7 +576,7 @@ mod wasm {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         fn updater(key_bindings: &mut KeyBindings) {
-            key_bindings.crouch = KeyCode::LControl;
+            key_bindings.crouch = KeyCode::ControlLeft;
         }
         resource.update(updater);
 
@@ -625,7 +625,7 @@ mod wasm {
         assert_eq!(expected_initial_content.trim(), actual_initial_content.trim());
 
         fn updater(key_bindings: &mut KeyBindings) {
-            key_bindings.crouch = KeyCode::LControl;
+            key_bindings.crouch = KeyCode::ControlLeft;
         }
         updater(resource.get_mut());
 

@@ -95,7 +95,7 @@ To modify the resource, you can have a parameter of type `ResMut<Persistent<R>>`
 ```rust
 fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
   key_bindings.update(|key_bindings| {
-    key_bindings.crouch = KeyCode::LControl;
+    key_bindings.crouch = KeyCode::ControlLeft;
   });
 }
 ```
@@ -110,7 +110,7 @@ For such cases, you can avoid using [set](https://docs.rs/bevy-persistent/latest
 
 ```rust
 fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-  key_bindings.crouch = KeyCode::LControl;
+  key_bindings.crouch = KeyCode::ControlLeft;
 }
 ```
 
@@ -352,7 +352,7 @@ With [bevy_pkv](https://github.com/johanhelsing/bevy_pkv), modifying the object 
 ```rust
 fn modify_key_bindings(mut pkv: ResMut<PkvStore>) {
   let mut key_bindings = pkv.get::<KeyBindings>("key-bindings");
-  key_bindings.crouch = KeyCode::LControl;
+  key_bindings.crouch = KeyCode::ControlLeft;
   pkv.set("key-bindings", &key_bindings)
 }
 ```
@@ -372,7 +372,7 @@ You can easily change this file to:
 
 ```toml
 jump = "Space"
-crouch = "LControl"
+crouch = "ControlLeft"
 ```
 
 And it'd work perfectly in the next run!
