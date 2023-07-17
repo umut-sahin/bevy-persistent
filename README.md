@@ -123,6 +123,77 @@ fn persist_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
 }
 ```
 
+### Unloading/Reloading
+
+Persistent resources are kept in memory by default. This might lead to unnecessarily high memory usage. To overcome this, you can use [unload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.unload) method.
+
+```rust
+fn unload_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
+    key_bindings.unload().expect("failed to persist key bindings before unloading");
+}
+```
+
+Once this system is run, latest version of the underlying resource will be written to the underlying storage, and underlying resource will be removed from the memory.
+
+If you don't want to persist the latest version of the resource before unloading, or if you know the latest version is already persisted, can use [unload_without_persisting](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.unload_without_persisting) method.
+
+```rust
+fn unload_key_bindings_without_persisting(key_bindings: Res<Persistent<KeyBindings>>) {
+    key_bindings.unload_without_persisting();
+}
+```
+
+Once the persistent resource is unloaded, the underlying resource will not be accessible until it's loaded back to memory using [reload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.reload) method.
+
+```rust
+fn reload_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
+    key_bindings.reload().expect("failed to reload key bindings");
+}
+```
+
+Reload can also be used on already loaded persistent resources to synchronize with the external changes. This can be very useful in certain situations, such as a save editor. The save editor would update the save files, and calling reload would bring those updates to the game without restarting the game!
+
+#### You should be careful when using unloaded persistent resources!
+
+```rust
+// all of these will panic
+fn incorrect_usage_of_unloaded_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
+    // can't access the fields since it's not in memory
+    println!("{}", key_bindings.crouch);
+    key_bindings.crouch = KeyCode::ControlLeft;
+
+    // can't get the underlying resource since it's not in memory
+    key_bindings.get();
+    key_bindings.get_mut();
+
+    // can't update, persist, or unload the underlying resource since it's not in memory
+    key_bindings.update(...);
+    key_bindings.persist();
+    key_bindings.unload(); // this will call persist before unloading so it'll panic as well
+}
+
+// none of these will panic
+fn correct_usage_of_unloaded_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
+    // can get properties of the persistent resource
+    key_bindings.name();
+    key_bindings.format();
+    key_bindings.storage();
+    key_bindings.is_loaded();
+    key_bindings.is_unloaded();
+
+    // can try to get the underlying resource
+    key_bindings.try_get();
+    key_bindings.try_get_mut();
+
+    // can set the resource to a new value
+    key_bindings.set(...);
+
+    // can unload without persisting as it's a no-op or reload the persistent resource
+    key_bindings.unload_without_persisting(...);
+    key_bindings.reload(...);
+}
+```
+
 ## Prettifying
 
 It's a good idea to store some resources with a prettified format during development to easily observe/modify them.
@@ -306,43 +377,11 @@ As far as I can see, the current version of [bevy_pkv](https://github.com/johanh
 
 Mandatory note on this, please please please profile before making decisions for performance reasons!
 
-- **bevy_pkv supports multiple concurrent applications running at the same time (in native apps)**
-
-I'm not 100% sure about this, but as far as I know, both [sled](https://sled.rs/) and [RocksDB](https://rocksdb.org/) support concurrent reads and writes from different processes, which means if there are multiple instances of the application running, it'll work with proper concurrency semantics.
-
-[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) on the other hand reads the object from the disk during setup and then updates it as the application runs. So whichever instance runs the last, its state will persist for the next session! Furthermore, changes made in one instance will not be visible to other instances.
-
-Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can provide a solution to this problem at some point if it's requested by the community! I really like the idea of providing `.refresh()` method for `Persistent<R>`.
-
-```rust
-fn refresh_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-    key_bindings.refresh();
-}
-```
-
-This system would read the settings from the disk again to be up-to-date with external modifications!
-
 - **bevy_pkv parses the objects on each read**
 
 Writes being extremely optimized, reads can be slow in [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) because reading a persistent object requires parsing, on each read!
 
-In [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/), reads are basically free as `Persistent<R>` is just a wrapper around the actual object. Though this comes with the drawback of memory usage, as objects are always kept in memory.
-
-Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can provide a solution to this problem at some point if it's requested by the community! I really like the idea of providing `.load()` and `.unload()` methods for `Persistent<R>`.
-
-```rust
-fn unload_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-    key_bindings.unload();
-}
-
-fn load_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-    key_bindings.load();
-}
-
-fn utilize_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
-    let jump_key = key_bindings.jump; // this would panic if the resource is unloaded
-}
-```
+In [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/), reads are basically free as `Persistent<R>` is just a wrapper around the actual object. That is unless you unload them using [unload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.unload) or [unload_without_persisting](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.unload_without_persisting) methods to save memory. When you load them back using [reload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.reload) method, parsing will happen once and reads will be free again.
 
 Again, always profile before making decisions for performance reasons!
 
