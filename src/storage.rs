@@ -56,7 +56,7 @@ impl Storage {
     }
 
     /// Reads a resource from the storage.
-    pub fn read<R: Resource + Serialize + DeserializeOwned>(
+    pub fn read<R: Serialize + DeserializeOwned>(
         &self,
         name: &str,
         format: StorageFormat,
@@ -121,7 +121,7 @@ impl Storage {
     }
 
     /// Writes a resource to the storage.
-    pub fn write<R: Resource + Serialize + DeserializeOwned>(
+    pub fn write<R: Serialize + DeserializeOwned>(
         &self,
         name: &str,
         format: StorageFormat,

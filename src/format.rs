@@ -35,7 +35,7 @@ pub enum StorageFormat {
 ))]
 impl StorageFormat {
     /// Serializes a resource into bytes.
-    pub fn serialize<R: Resource + Serialize + DeserializeOwned>(
+    pub fn serialize<R: Serialize + DeserializeOwned>(
         self,
         name: &str,
         resource: &R,
@@ -124,7 +124,7 @@ impl StorageFormat {
     }
 
     /// Deserializes a resource from bytes.
-    pub fn deserialize<R: Resource + Serialize + DeserializeOwned>(
+    pub fn deserialize<R: Serialize + DeserializeOwned>(
         self,
         name: &str,
         serialized_resource: &[u8],
@@ -218,7 +218,7 @@ impl StorageFormat {
 )))]
 impl StorageFormat {
     /// Serializes a resource into bytes.
-    pub fn serialize<R: Resource + Serialize + DeserializeOwned>(
+    pub fn serialize<R: Serialize + DeserializeOwned>(
         self,
         _name: &str,
         _resource: &R,
@@ -227,7 +227,7 @@ impl StorageFormat {
     }
 
     /// Deserializes a resource from bytes.
-    pub fn deserialize<R: Resource + Serialize + DeserializeOwned>(
+    pub fn deserialize<R: Serialize + DeserializeOwned>(
         self,
         _name: &str,
         _serialized_resource: &[u8],
