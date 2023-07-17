@@ -49,8 +49,8 @@ You need to define the [Resource](https://docs.rs/bevy/latest/bevy/ecs/system/tr
 ```rust
 #[derive(Resource, Serialize, Deserialize)]
 struct KeyBindings {
-  jump: KeyCode,
-  crouch: KeyCode,
+    jump: KeyCode,
+    crouch: KeyCode,
 }
 ```
 
@@ -67,7 +67,7 @@ fn setup(mut commands: Commands) {
             .format(StorageFormat::Toml)
             .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
-            .build(),
+            .build()
     )
 }
 ```
@@ -94,9 +94,9 @@ To modify the resource, you can have a parameter of type `ResMut<Persistent<R>>`
 
 ```rust
 fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-  key_bindings.update(|key_bindings| {
-    key_bindings.crouch = KeyCode::LControl;
-  });
+    key_bindings.update(|key_bindings| {
+        key_bindings.crouch = KeyCode::LControl;
+    });
 }
 ```
 
@@ -110,7 +110,7 @@ For such cases, you can avoid using [set](https://docs.rs/bevy-persistent/latest
 
 ```rust
 fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-  key_bindings.crouch = KeyCode::LControl;
+    key_bindings.crouch = KeyCode::LControl;
 }
 ```
 
@@ -118,7 +118,7 @@ When you want the resource to persist with its current value, you can use [persi
 
 ```rust
 fn persist_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
-  key_bindings.persist();
+    key_bindings.persist();
 }
 ```
 
@@ -153,7 +153,7 @@ fn setup(mut commands: Commands) {
             })
             .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
-            .build(),
+            .build()
     )
 }
 ```
@@ -187,18 +187,18 @@ It might seem complicated at first, but makes it really easy to support both Nat
 use std::path::Path;
 
 fn setup(mut commands: Commands) {
-  let config_dir = dirs::config_dir()
-    .map(|native_config_dir| native_config_dir.join("your-amazing-game"))
-    .unwrap_or(Path::new("local").join("configuration"));
+    let config_dir = dirs::config_dir()
+        .map(|native_config_dir| native_config_dir.join("your-amazing-game"))
+        .unwrap_or(Path::new("local").join("configuration"));
 
-  commands.insert_resource(
-    Persistent::<KeyBindings>::builder()
-      .name("key bindings")
-      .format(StorageFormat::Json)
-      .path(config_dir.join("key-bindings.toml"))
-      .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
-      .build(),
-  )
+    commands.insert_resource(
+        Persistent::<KeyBindings>::builder()
+            .name("key bindings")
+            .format(StorageFormat::Json)
+            .path(config_dir.join("key-bindings.toml"))
+            .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+            .build()
+    )
 }
 ```
 
@@ -254,20 +254,20 @@ This is very easy to do with [bevy_pkv](https://github.com/johanhelsing/bevy_pkv
 
 ```rust
 fn setup(mut pkv: ResMut<PkvStore>) {
-  // ...
-  let blue_settings: Settings = ...;
-  let red_settings: Settings = ...;
-  // ...
-  pkv.set("blue-settings", &blue_settings).unwrap();
-  pkv.set("red-settings", &red_settings).unwrap();
-  // ...
+    // ...
+    let blue_settings: Settings = ...;
+    let red_settings: Settings = ...;
+    // ...
+    pkv.set("blue-settings", &blue_settings).unwrap();
+    pkv.set("red-settings", &red_settings).unwrap();
+    // ...
 }
 
 fn utilize_settings(pkv: Res<PkvStore>) {
-  // ...
-  let blue_settings: Settings = pkv.get("blue-settings").unwrap();
-  let red_settings: Settings = pkv.get("red-settings").unwrap();
-  // ...
+    // ...
+    let blue_settings: Settings = pkv.get("blue-settings").unwrap();
+    let red_settings: Settings = pkv.get("red-settings").unwrap();
+    // ...
 }
 ```
 
@@ -275,21 +275,20 @@ Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can prov
 
 ```rust
 fn setup(mut settings: ResMut<PersistentMap<&'static str, Settings>>) {
-  // ...
-  let blue_settings: Settings = ...;
-  let red_settings: Settings = ...;
-  // ...
-  settings.insert("blue", blue_settings)?;
-  settings.insert("red", red_settings)?;
-  // ...
-
+    // ...
+    let blue_settings: Settings = ...;
+    let red_settings: Settings = ...;
+    // ...
+    settings.insert("blue", blue_settings)?;
+    settings.insert("red", red_settings)?;
+    // ...
 }
 
 fn utilize_settings(settings: Res<PersistentMap<&'static str, Settings>>) {
-  // ...
-  let blue_settings: &Settings = settings["blue"];
-  let red_settings: &Settings = settings["red"];
-  // ...
+    // ...
+    let blue_settings: &Settings = settings["blue"];
+    let red_settings: &Settings = settings["red"];
+    // ...
 }
 ```
 
@@ -315,7 +314,7 @@ Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can prov
 
 ```rust
 fn refresh_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-  key_bindings.refresh();
+    key_bindings.refresh();
 }
 ```
 
@@ -331,15 +330,15 @@ Maybe [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) can prov
 
 ```rust
 fn unload_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-  key_bindings.unload();
+    key_bindings.unload();
 }
 
 fn load_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
-  key_bindings.load();
+    key_bindings.load();
 }
 
 fn utilize_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
-  let jump_key = key_bindings.jump; // this would panic if the resource is unloaded
+    let jump_key = key_bindings.jump; // this would panic if the resource is unloaded
 }
 ```
 
@@ -351,9 +350,9 @@ With [bevy_pkv](https://github.com/johanhelsing/bevy_pkv), modifying the object 
 
 ```rust
 fn modify_key_bindings(mut pkv: ResMut<PkvStore>) {
-  let mut key_bindings = pkv.get::<KeyBindings>("key-bindings");
-  key_bindings.crouch = KeyCode::LControl;
-  pkv.set("key-bindings", &key_bindings)
+    let mut key_bindings = pkv.get::<KeyBindings>("key-bindings");
+    key_bindings.crouch = KeyCode::LControl;
+    pkv.set("key-bindings", &key_bindings)
 }
 ```
 
