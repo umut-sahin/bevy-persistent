@@ -3,7 +3,7 @@
 use crate::prelude::*;
 
 /// A storage format.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Reflect)]
 pub enum StorageFormat {
     #[cfg(feature = "bincode")]
     Bincode,
