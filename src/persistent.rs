@@ -39,7 +39,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             storage.initialize().map_err(|error| {
                 // initialize can only return error for filesystem storage
                 log::warn!(
-                    "failed to create the parent directory for default {} at {}: {}",
+                    "failed to create the parent directory for {} at {}: {}",
                     name,
                     storage,
                     error,
@@ -56,6 +56,12 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                     // serialization errors are already logged
                     if !error.is_serde() {
                         log::warn!("failed to save default {} to {}: {}", name, storage, error);
+                    } else {
+                        log::warn!(
+                            "failed to save default {} to {} due to a serialization error",
+                            name,
+                            storage,
+                        );
                     }
                     error
                 })?;
@@ -63,15 +69,21 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             return Ok(Persistent { name, format, storage, resource });
         }
 
-        log::info!("loading {} from {}", name, storage);
-
         let resource = storage.read(&name, format).map_err(|error| {
             // serialization errors are already logged
             if !error.is_serde() {
-                log::warn!("failed to read {}: {}", name, error);
+                log::warn!("failed to load {} from {}: {}", name, storage, error);
+            } else {
+                log::warn!(
+                    "failed to load {} from {} due to a deserialization error",
+                    storage,
+                    name,
+                );
             }
             error
         })?;
+
+        log::info!("loaded {} from {}", name, storage);
 
         Ok(Persistent { name, format, storage, resource })
     }
@@ -134,6 +146,12 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 // serialization errors are logged in format module
                 if !error.is_serde() {
                     log::warn!("failed to save new {} to {}: {}", self.name, self.storage, error);
+                } else {
+                    log::warn!(
+                        "failed to save new {} to {} due to a serialization error",
+                        self.name,
+                        self.storage,
+                    );
                 }
                 error
             })
