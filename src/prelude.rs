@@ -2,10 +2,8 @@
 
 pub(crate) use crate::{
     builder::PersistentBuilder,
-    storage::{
-        Storage,
-        StorageError,
-    },
+    error::PersistenceError,
+    storage::Storage,
 };
 pub(crate) use bevy::{
     log,

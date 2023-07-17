@@ -22,7 +22,7 @@ mod native {
             .format(format)
             .path(&path)
             .default(default.clone())
-            .build();
+            .build()?;
 
         assert!(path.exists());
 
@@ -37,13 +37,13 @@ mod native {
     #[test]
     #[should_panic(expected = "persistent resource name is not set")]
     fn test_builder_no_name() {
-        Persistent::<KeyBindings>::builder().build();
+        Persistent::<KeyBindings>::builder().build().ok();
     }
 
     #[test]
     #[should_panic(expected = "persistent resource format is not set")]
     fn test_builder_no_format() {
-        Persistent::<KeyBindings>::builder().name("key bindings").build();
+        Persistent::<KeyBindings>::builder().name("key bindings").build().ok();
     }
 
     #[test]
@@ -53,7 +53,8 @@ mod native {
         Persistent::<KeyBindings>::builder()
             .name("key bindings")
             .format(StorageFormat::Toml)
-            .build();
+            .build()
+            .ok();
     }
 
     #[test]
@@ -64,7 +65,8 @@ mod native {
             .name("key bindings")
             .format(StorageFormat::Toml)
             .path("")
-            .build();
+            .build()
+            .ok();
     }
 }
 
@@ -96,7 +98,7 @@ mod wasm {
             .format(format)
             .path(path)
             .default(default.clone())
-            .build();
+            .build()?;
 
         assert!(LocalStorage::raw().get_item("key-bindings.toml").unwrap().is_some());
 
@@ -128,7 +130,7 @@ mod wasm {
             .format(format)
             .path(path)
             .default(default.clone())
-            .build();
+            .build()?;
 
         assert!(SessionStorage::raw().get_item("key-bindings.toml").unwrap().is_some());
 

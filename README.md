@@ -68,13 +68,12 @@ fn setup(mut commands: Commands) {
             .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
             .build()
+            .expect("failed to initialize key bindings")
     )
 }
 ```
 
 If it's the first run, the resource will have the specified default value and that default value will be saved to the specified path in the specified format. Otherwise, key bindings will be loaded from the specified path using the specified format.
-
-If any failures happen at any point (e.g., no permission to read/write to the specified path), the error will be logged, and the specified default value will be used for the resource.
 
 ### Access
 
@@ -96,11 +95,13 @@ To modify the resource, you can have a parameter of type `ResMut<Persistent<R>>`
 fn modify_key_bindings(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
     key_bindings.update(|key_bindings| {
         key_bindings.crouch = KeyCode::LControl;
-    });
+    }).expect("failed to update key bindings");
 }
 ```
 
 [Persistent\<R>](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html) has [set](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.set) and [update](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.update) methods to modify the underlying resource. Both of those methods write the updated resource to the disk before returning.
+
+If any failures happen at any point (e.g., no permission to read/write to the specified path), the error will be returned, but the underlying object would be updated, and new value would be visible for the rest of the game. However, it won't persist to the next game session!
 
 ## Manual Persistence
 
@@ -118,7 +119,7 @@ When you want the resource to persist with its current value, you can use [persi
 
 ```rust
 fn persist_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
-    key_bindings.persist();
+    key_bindings.persist().expect("failed to save new key bindings");
 }
 ```
 
@@ -154,6 +155,7 @@ fn setup(mut commands: Commands) {
             .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
             .build()
+            .expect("failed to initialize key bindings")
     )
 }
 ```
@@ -198,6 +200,7 @@ fn setup(mut commands: Commands) {
             .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
             .build()
+            .expect("failed to initialize key bindings")
     )
 }
 ```
@@ -220,7 +223,10 @@ fn setup(mut commands: Commands) {
     let storage = Storage::LocalStorage { key: "key bindings".to_owned() };
     let default = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C };
 
-    commands.insert_resource(Persistent::new(name, format, storage, default));
+    commands.insert_resource(
+        Persistent::new(name, format, storage, default)
+            .expect("failed to initialize key bindings"),
+    );
 }
 ```
 
@@ -291,10 +297,6 @@ fn utilize_settings(settings: Res<PersistentMap<&'static str, Settings>>) {
     // ...
 }
 ```
-
-- **bevy_pkv has better error handling**
-
-[bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) logs the errors and then ignores them for the time being. This was initially done for simplicity, but it wasn't the right choice. It'll be improved in the future but, for now, if you want to handle errors in a specific way, [bevy_pkv](https://github.com/johanhelsing/bevy_pkv) is the better choice.
 
 - **bevy_pkv is using extremely optimized key-value storage engines (in native apps)**
 

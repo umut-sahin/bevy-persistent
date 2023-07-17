@@ -37,7 +37,8 @@ fn main() {
         .format(StorageFormat::Toml)
         .path(state_dir.join("window-state.toml"))
         .default(WindowState { position: (0, 0), size: (800, 600) })
-        .build();
+        .build()
+        .expect("failed to initialize window state");
 
     let title = "I am a smart window!".to_owned();
     let position = WindowPosition::At(IVec2::from(persistent_window_state.position));
@@ -86,6 +87,6 @@ fn update_window_state(mut window_state: ResMut<Persistent<WindowState>>, window
     let size = (window.resolution.physical_width(), window.resolution.physical_height());
 
     if window_state.position != position || window_state.size != size {
-        window_state.set(WindowState { position, size })
+        window_state.set(WindowState { position, size }).ok();
     }
 }
