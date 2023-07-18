@@ -76,8 +76,8 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             } else {
                 log::warn!(
                     "failed to load {} from {} due to a deserialization error",
-                    storage,
                     name,
+                    storage,
                 );
             }
             error
