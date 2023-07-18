@@ -412,7 +412,7 @@ You can easily change this file to:
 
 ```toml
 jump = "Space"
-crouch = "LControl"
+crouch = "ControlLeft"
 ```
 
 And it'd work perfectly in the next run!
