@@ -22,8 +22,9 @@ fn main() {
             // We don't need a window for this example.
             DefaultPlugins.set(WindowPlugin { primary_window: None, ..Default::default() }),
         )
-        .add_startup_system(setup)
+        .add_systems(Startup, setup)
         .add_systems(
+            Update,
             (show_initial_key_bindings, switch_crouch_key, show_final_key_bindings, exit).chain(),
         )
         .run();
@@ -55,8 +56,8 @@ fn switch_crouch_key(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
     key_bindings
         .update(|key_bindings| {
             key_bindings.crouch = match key_bindings.crouch {
-                KeyCode::C => KeyCode::LControl,
-                KeyCode::LControl => KeyCode::C,
+                KeyCode::C => KeyCode::ControlLeft,
+                KeyCode::ControlLeft => KeyCode::C,
                 _ => unimplemented!(),
             }
         })
