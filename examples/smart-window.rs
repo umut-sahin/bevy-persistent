@@ -24,7 +24,7 @@ struct WindowState {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugin(LogPlugin::default());
+    app.add_plugins(LogPlugin::default());
 
     let state_dir = dirs::state_dir()
         .map(|native_state_dir| native_state_dir.join("bevy-persistent"))
@@ -53,8 +53,8 @@ fn main() {
     }));
 
     app.insert_resource(persistent_window_state)
-        .add_system(on_window_moved)
-        .add_system(on_window_resized);
+        .add_systems(Update, on_window_moved)
+        .add_systems(Update, on_window_resized);
 
     app.run();
 }

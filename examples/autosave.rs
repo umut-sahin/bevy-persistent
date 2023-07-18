@@ -48,9 +48,9 @@ fn main() {
                 .build()
                 .expect("failed to initialize game state"),
         )
-        .add_startup_system(setup)
-        .add_system(player_movement)
-        .add_system(autosave.after(player_movement))
+        .add_systems(Startup, setup)
+        .add_systems(Update, player_movement)
+        .add_systems(Update, autosave.after(player_movement))
         .run();
 }
 
