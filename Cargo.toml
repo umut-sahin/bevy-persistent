@@ -7,7 +7,10 @@ repository = "https://github.com/umut-sahin/bevy-persistent/"
 version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-authors = ["Umut Şahin <umutsahin@protonmail.com>"]
+authors = [
+    "Umut Şahin <umutsahin@protonmail.com>",
+    "Shane Lillie <ignignokterr@gmail.com>",
+]
 
 [dependencies]
 bevy = { version = "0.11", features = ["serialize"] }
