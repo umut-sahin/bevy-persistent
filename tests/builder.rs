@@ -35,6 +35,51 @@ mod native {
     }
 
     #[test]
+    #[cfg(feature = "toml")]
+    fn test_builder_build_unloaded() -> anyhow::Result<()> {
+        let tempdir = tempfile::tempdir()?;
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let path = tempdir.path().join("key-bindings.toml");
+        let default = KeyBindings::default();
+
+        assert!(!path.exists());
+
+        let mut resource = Persistent::<KeyBindings>::builder()
+            .name(name)
+            .format(format)
+            .path(&path)
+            .default(default.clone())
+            .loaded(false)
+            .build()?;
+
+        assert!(path.exists());
+
+        assert_eq!(resource.name(), name);
+        assert_eq!(resource.format(), format);
+        assert_eq!(resource.storage(), &Storage::Filesystem { path });
+
+        assert!(!resource.is_loaded());
+        assert!(resource.is_unloaded());
+
+        assert!(resource.try_get().is_none());
+        assert!(resource.try_get_mut().is_none());
+
+        resource.reload()?;
+
+        assert!(resource.is_loaded());
+        assert!(!resource.is_unloaded());
+
+        assert!(resource.try_get().is_some());
+        assert!(resource.try_get_mut().is_some());
+
+        assert_eq!(resource.get(), &KeyBindings::default());
+
+        Ok(())
+    }
+
+    #[test]
     #[should_panic(expected = "persistent resource name is not set")]
     fn test_builder_no_name() {
         Persistent::<KeyBindings>::builder().build().ok();
@@ -115,6 +160,54 @@ mod wasm {
 
     #[wasm_bindgen_test]
     #[cfg(feature = "toml")]
+    fn test_builder_build_unloaded_local_storage() -> anyhow::Result<()> {
+        LocalStorage::clear();
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let path = PathBuf::from("local").join("key-bindings.toml");
+        let default = KeyBindings::default();
+
+        assert!(LocalStorage::raw().get_item("key-bindings.toml").unwrap().is_none());
+
+        let mut resource = Persistent::<KeyBindings>::builder()
+            .name(name)
+            .format(format)
+            .path(path)
+            .default(default.clone())
+            .loaded(false)
+            .build()?;
+
+        assert!(LocalStorage::raw().get_item("key-bindings.toml").unwrap().is_some());
+
+        assert_eq!(resource.name(), name);
+        assert_eq!(resource.format(), format);
+        assert_eq!(
+            resource.storage(),
+            &Storage::LocalStorage { key: "key-bindings.toml".to_owned() },
+        );
+
+        assert!(!resource.is_loaded());
+        assert!(resource.is_unloaded());
+
+        assert!(resource.try_get().is_none());
+        assert!(resource.try_get_mut().is_none());
+
+        resource.reload()?;
+
+        assert!(resource.is_loaded());
+        assert!(!resource.is_unloaded());
+
+        assert!(resource.try_get().is_some());
+        assert!(resource.try_get_mut().is_some());
+
+        assert_eq!(resource.get(), &KeyBindings::default());
+
+        Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    #[cfg(feature = "toml")]
     fn test_builder_build_session_storage() -> anyhow::Result<()> {
         SessionStorage::clear();
 
@@ -141,6 +234,54 @@ mod wasm {
             &Storage::SessionStorage { key: "key-bindings.toml".to_owned() },
         );
         assert_eq!(resource.get(), &default);
+
+        Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    #[cfg(feature = "toml")]
+    fn test_builder_build_unloaded_session_storage() -> anyhow::Result<()> {
+        SessionStorage::clear();
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let path = PathBuf::from("session").join("key-bindings.toml");
+        let default = KeyBindings::default();
+
+        assert!(SessionStorage::raw().get_item("key-bindings.toml").unwrap().is_none());
+
+        let mut resource = Persistent::<KeyBindings>::builder()
+            .name(name)
+            .format(format)
+            .path(path)
+            .default(default.clone())
+            .loaded(false)
+            .build()?;
+
+        assert!(SessionStorage::raw().get_item("key-bindings.toml").unwrap().is_some());
+
+        assert_eq!(resource.name(), name);
+        assert_eq!(resource.format(), format);
+        assert_eq!(
+            resource.storage(),
+            &Storage::SessionStorage { key: "key-bindings.toml".to_owned() },
+        );
+
+        assert!(!resource.is_loaded());
+        assert!(resource.is_unloaded());
+
+        assert!(resource.try_get().is_none());
+        assert!(resource.try_get_mut().is_none());
+
+        resource.reload()?;
+
+        assert!(resource.is_loaded());
+        assert!(!resource.is_unloaded());
+
+        assert!(resource.try_get().is_some());
+        assert!(resource.try_get_mut().is_some());
+
+        assert_eq!(resource.get(), &KeyBindings::default());
 
         Ok(())
     }

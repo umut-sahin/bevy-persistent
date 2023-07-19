@@ -8,6 +8,7 @@ pub struct PersistentBuilder<R: Resource + Serialize + DeserializeOwned> {
     pub(crate) format: Option<StorageFormat>,
     pub(crate) path: Option<PathBuf>,
     pub(crate) default: Option<R>,
+    pub(crate) loaded: bool,
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
@@ -32,6 +33,18 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
     /// Sets the default value of the resource.
     pub fn default(mut self, resource: R) -> PersistentBuilder<R> {
         self.default = Some(resource);
+        self
+    }
+
+    /// Sets the initial loaded status of the resource.
+    pub fn loaded(mut self, loaded: bool) -> PersistentBuilder<R> {
+        self.loaded = loaded;
+        self
+    }
+
+    /// Sets the initial unloaded status of the resource.
+    pub fn unloaded(mut self, unloaded: bool) -> PersistentBuilder<R> {
+        self.loaded = !unloaded;
         self
     }
 }
@@ -60,6 +73,7 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         let format = self.format.unwrap();
         let path = self.path.unwrap();
         let default = self.default.unwrap();
+        let loaded = self.loaded;
 
         let storage = {
             #[cfg(not(target_family = "wasm"))]
@@ -84,6 +98,6 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
             }
         };
 
-        Persistent::new(name, format, storage, default)
+        Persistent::new(name, format, storage, default, loaded)
     }
 }

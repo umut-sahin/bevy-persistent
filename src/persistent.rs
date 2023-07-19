@@ -21,7 +21,7 @@ pub struct Persistent<R: Resource + Serialize + DeserializeOwned> {
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Creates a persistent resource builder.
     pub fn builder() -> PersistentBuilder<R> {
-        PersistentBuilder { name: None, format: None, path: None, default: None }
+        PersistentBuilder { name: None, format: None, path: None, default: None, loaded: true }
     }
 
     /// Creates a persistent resource.
@@ -30,6 +30,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
         format: StorageFormat,
         storage: Storage,
         default: R,
+        loaded: bool,
     ) -> Result<Persistent<R>, PersistenceError> {
         let name = name.to_string();
 
@@ -66,7 +67,12 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                     error
                 })?;
 
-            return Ok(Persistent { name, format, storage, resource: Some(resource) });
+            let resource = if loaded { Some(resource) } else { None };
+            return Ok(Persistent { name, format, storage, resource });
+        }
+
+        if !loaded {
+            return Ok(Persistent { name, format, storage, resource: None });
         }
 
         let resource = storage.read(&name, format).map_err(|error| {
