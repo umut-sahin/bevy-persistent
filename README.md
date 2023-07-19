@@ -143,7 +143,26 @@ fn unload_key_bindings_without_persisting(key_bindings: Res<Persistent<KeyBindin
 }
 ```
 
-Once the persistent resource is unloaded, the underlying resource will not be accessible until it's loaded back to memory using [reload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.reload) method.
+If immediate loading to memory upon creation is not desired, the persistent resource can be created in the unloaded state.
+
+```rust
+fn setup(mut commands: Commands) {
+    let config_dir = dirs::config_dir().unwrap().join("your-amazing-game");
+    commands.insert_resource(
+        Persistent::<KeyBindings>::builder()
+            .name("key bindings")
+            .format(StorageFormat::Toml)
+            .path(config_dir.join("key-bindings.toml"))
+            .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+            .loaded(false)
+            //^^^^^^^^^^^^ using this or ".unloaded(true)"
+            .build()
+            .expect("failed to initialize key bindings")
+    )
+}
+```
+
+When the persistent resource is unloaded, the underlying resource will not be accessible until it's loaded back to memory using [reload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.reload) method.
 
 ```rust
 fn reload_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
@@ -293,10 +312,11 @@ fn setup(mut commands: Commands) {
     let format = StorageFormat::Toml;
     let storage = Storage::LocalStorage { key: "key bindings".to_owned() };
     let default = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C };
+    let loaded = true;
 
     commands.insert_resource(
-        Persistent::new(name, format, storage, default)
-            .expect("failed to initialize key bindings"),
+        Persistent::new(name, format, storage, default, loaded)
+            .expect("failed to initialize key bindings")
     );
 }
 ```
