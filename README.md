@@ -207,8 +207,10 @@ fn correct_usage_of_unloaded_key_bindings(key_bindings: Res<Persistent<KeyBindin
     // can set the resource to a new value
     key_bindings.set(...);
 
-    // can unload without persisting as it's a no-op or reload the persistent resource
+    // can unload without persisting as it's a no-op
     key_bindings.unload_without_persisting(...);
+
+    // can reload the persistent resource
     key_bindings.reload(...);
 }
 ```
