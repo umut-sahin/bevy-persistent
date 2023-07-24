@@ -15,13 +15,21 @@ pub struct Persistent<R: Resource + Serialize + DeserializeOwned> {
     pub(crate) name: String,
     pub(crate) format: StorageFormat,
     pub(crate) storage: Storage,
+    pub(crate) default: Option<Box<R>>,
     pub(crate) resource: Option<R>,
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Creates a persistent resource builder.
     pub fn builder() -> PersistentBuilder<R> {
-        PersistentBuilder { name: None, format: None, path: None, default: None, loaded: true }
+        PersistentBuilder {
+            name: None,
+            format: None,
+            path: None,
+            default: None,
+            revertible: false,
+            loaded: true,
+        }
     }
 
     /// Creates a persistent resource.
@@ -30,12 +38,13 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
         format: StorageFormat,
         storage: Storage,
         default: R,
+        revertible: bool,
         loaded: bool,
     ) -> Result<Persistent<R>, PersistenceError> {
         let name = name.to_string();
 
         if !storage.occupied() {
-            let resource = default;
+            // first run
 
             storage.initialize().map_err(|error| {
                 // initialize can only return error for filesystem storage
@@ -49,7 +58,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             })?;
 
             storage
-                .write(&name, format, &resource)
+                .write(&name, format, &default)
                 .map(|_| {
                     log::info!("saved default {} to {}", name, storage);
                 })
@@ -67,12 +76,26 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                     error
                 })?;
 
-            let resource = if loaded { Some(resource) } else { None };
-            return Ok(Persistent { name, format, storage, resource });
+            let resource = if loaded {
+                // we need to copy the default resource without using clone
+                // this is because cloning can have special semantics
+                // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
+                // would change the default object, which is not desired
+                let serialized = format.serialize(&name, &default)?;
+                let reconstructed = format.deserialize(&name, &serialized)?;
+                Some(reconstructed)
+            } else {
+                None
+            };
+            let default = if revertible { Some(Box::new(default)) } else { None };
+
+            return Ok(Persistent { name, format, storage, default, resource });
         }
 
+        let default = if revertible { Some(Box::new(default)) } else { None };
+
         if !loaded {
-            return Ok(Persistent { name, format, storage, resource: None });
+            return Ok(Persistent { name, format, storage, default, resource: None });
         }
 
         let resource = storage.read(&name, format).map_err(|error| {
@@ -91,7 +114,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
 
         log::info!("loaded {} from {}", name, storage);
 
-        Ok(Persistent { name, format, storage, resource: Some(resource) })
+        Ok(Persistent { name, format, storage, default, resource: Some(resource) })
     }
 }
 
@@ -109,6 +132,11 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Gets the storage of the resource.
     pub fn storage(&self) -> &Storage {
         &self.storage
+    }
+
+    /// Gets if the resource is revertible.
+    pub fn is_revertible(&self) -> bool {
+        self.default.is_some()
     }
 
     /// Gets if the resource is loaded.
@@ -233,6 +261,56 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             error
         })?);
         log::info!("reloaded {} from {}", self.name, self.storage);
+        Ok(())
+    }
+
+    /// Reverts the resource to it's default value.
+    ///
+    /// Loaded status is kept upon reloading.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the resource is not revertible.
+    pub fn revert_to_default(&mut self) -> Result<(), PersistenceError> {
+        if !self.is_revertible() {
+            panic!("tried to revert non-revertible {}", self.name);
+        }
+
+        self.storage
+            .write(&self.name, self.format, self.default.as_ref().unwrap())
+            .map(|_| {
+                log::info!("reverted {} to default in {}", self.name, self.storage);
+            })
+            .map_err(|error| {
+                // serialization errors are logged in format module
+                if !error.is_serde() {
+                    log::warn!(
+                        "failed to revert {} to default in {}: {}",
+                        self.name,
+                        self.storage,
+                        error,
+                    );
+                } else {
+                    log::warn!(
+                        "failed to revert {} to default in {} due to a serialization error",
+                        self.name,
+                        self.storage,
+                    );
+                }
+                error
+            })?;
+
+        if self.resource.is_some() {
+            // we need to copy the default resource without using clone
+            // this is because cloning can have special semantics
+            // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
+            // would change the default object, which is not desired
+            let serialized = self.format.serialize(&self.name, &self.default)?;
+            let reconstructed = self.format.deserialize(&self.name, &serialized)?;
+            self.resource = Some(reconstructed);
+        }
+
+        log::info!("reverted {} to default", self.name);
         Ok(())
     }
 }

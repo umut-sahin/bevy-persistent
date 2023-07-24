@@ -123,6 +123,37 @@ fn persist_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
 }
 ```
 
+### Reverting
+
+It might make sense for some persistent resources to be reverted to default. Imagine having a settings page, it's a good idea to put revert to default button to this page because if players mess up, it'd be much easier if they can revert everything to its default state compared to manually adjusting keys.
+
+Such persistent resources need to be created revertibly.
+
+```rust
+fn setup(mut commands: Commands) {
+    let config_dir = dirs::config_dir().unwrap().join("your-amazing-game");
+    commands.insert_resource(
+        Persistent::<KeyBindings>::builder()
+            .name("key bindings")
+            .format(StorageFormat::Toml)
+            .path(config_dir.join("key-bindings.toml"))
+            .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+            .revertible(true)
+            //^^^^^^^^^^^^^^^ using this
+            .build()
+            .expect("failed to initialize key bindings")
+    )
+}
+```
+
+Revertible persistent resources can use [revert_to_default](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.revert_to_default) method.
+
+```rust
+fn revert_key_bindings_to_default(key_bindings: Res<Persistent<KeyBindings>>) {
+    key_bindings.revert_to_default().expect("failed to revert key bindings to default");
+}
+```
+
 ### Unloading/Reloading
 
 Persistent resources are kept in memory by default. This might lead to unnecessarily high memory usage. To overcome this, you can use [unload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.unload) method.
@@ -212,6 +243,9 @@ fn correct_usage_of_unloaded_key_bindings(key_bindings: Res<Persistent<KeyBindin
 
     // can reload the persistent resource
     key_bindings.reload(...);
+
+    // can revert the persistent resource to its default
+    key_bindings.revert_to_default(...);
 }
 ```
 
@@ -314,10 +348,11 @@ fn setup(mut commands: Commands) {
     let format = StorageFormat::Toml;
     let storage = Storage::LocalStorage { key: "key bindings".to_owned() };
     let default = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C };
+    let revertible = false;
     let loaded = true;
 
     commands.insert_resource(
-        Persistent::new(name, format, storage, default, loaded)
+        Persistent::new(name, format, storage, default, revertible, loaded)
             .expect("failed to initialize key bindings")
     );
 }

@@ -8,6 +8,7 @@ pub struct PersistentBuilder<R: Resource + Serialize + DeserializeOwned> {
     pub(crate) format: Option<StorageFormat>,
     pub(crate) path: Option<PathBuf>,
     pub(crate) default: Option<R>,
+    pub(crate) revertible: bool,
     pub(crate) loaded: bool,
 }
 
@@ -33,6 +34,12 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
     /// Sets the default value of the resource.
     pub fn default(mut self, resource: R) -> PersistentBuilder<R> {
         self.default = Some(resource);
+        self
+    }
+
+    /// Sets whether the the resource can be reverted to default.
+    pub fn revertible(mut self, revertible: bool) -> PersistentBuilder<R> {
+        self.revertible = revertible;
         self
     }
 
@@ -73,6 +80,7 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         let format = self.format.unwrap();
         let path = self.path.unwrap();
         let default = self.default.unwrap();
+        let revertible = self.revertible;
         let loaded = self.loaded;
 
         let storage = {
@@ -98,6 +106,6 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
             }
         };
 
-        Persistent::new(name, format, storage, default, loaded)
+        Persistent::new(name, format, storage, default, revertible, loaded)
     }
 }
