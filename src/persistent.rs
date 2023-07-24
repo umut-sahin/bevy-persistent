@@ -15,8 +15,9 @@ pub struct Persistent<R: Resource + Serialize + DeserializeOwned> {
     pub(crate) name: String,
     pub(crate) format: StorageFormat,
     pub(crate) storage: Storage,
-    pub(crate) default: Option<Box<R>>,
     pub(crate) resource: Option<R>,
+    pub(crate) default: Option<Box<R>>,
+    pub(crate) revert_to_default_on_deserialization_errors: bool,
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
@@ -26,21 +27,35 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             name: None,
             format: None,
             path: None,
+            loaded: true,
             default: None,
             revertible: false,
-            loaded: true,
+            revert_to_default_on_deserialization_errors: false,
         }
     }
 
     /// Creates a persistent resource.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `revert_to_default_on_deserialization_errors`
+    /// is set to `true` but `revertible` is set to `false`.
     pub fn new(
         name: impl ToString,
         format: StorageFormat,
         storage: Storage,
+        loaded: bool,
         default: R,
         revertible: bool,
-        loaded: bool,
+        revert_to_default_on_deserialization_errors: bool,
     ) -> Result<Persistent<R>, PersistenceError> {
+        if revert_to_default_on_deserialization_errors && !revertible {
+            panic!(
+                "revert to default on deserialization errors \
+                is set for a non-revertible persistent resource"
+            );
+        }
+
         let name = name.to_string();
 
         if !storage.occupied() {
@@ -77,44 +92,102 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 })?;
 
             let resource = if loaded {
-                // we need to copy the default resource without using clone
+                // we need to make a copy of the default resource without using clone
                 // this is because cloning can have special semantics
                 // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
                 // would change the default object, which is not desired
-                let serialized = format.serialize(&name, &default)?;
-                let reconstructed = format.deserialize(&name, &serialized)?;
+                let serialized = format.serialize(&name, &default).map_err(|error| {
+                    log::warn!("failed to clone default {} due to a serialization error", name);
+                    error
+                })?;
+                let reconstructed = format.deserialize(&name, &serialized).map_err(|error| {
+                    log::warn!("failed to clone default {} due to a deserialization error", name);
+                    error
+                })?;
+
                 Some(reconstructed)
             } else {
                 None
             };
             let default = if revertible { Some(Box::new(default)) } else { None };
 
-            return Ok(Persistent { name, format, storage, default, resource });
+            return Ok(Persistent {
+                name,
+                format,
+                storage,
+                resource,
+                default,
+                revert_to_default_on_deserialization_errors,
+            });
         }
 
         let default = if revertible { Some(Box::new(default)) } else { None };
 
         if !loaded {
-            return Ok(Persistent { name, format, storage, default, resource: None });
+            return Ok(Persistent {
+                name,
+                format,
+                storage,
+                resource: None,
+                default,
+                revert_to_default_on_deserialization_errors,
+            });
         }
 
-        let resource = storage.read(&name, format).map_err(|error| {
-            // serialization errors are already logged
-            if !error.is_serde() {
-                log::warn!("failed to load {} from {}: {}", name, storage, error);
-            } else {
-                log::warn!(
-                    "failed to load {} from {} due to a deserialization error",
-                    name,
-                    storage,
-                );
-            }
-            error
-        })?;
+        let resource = match storage.read(&name, format) {
+            Ok(resource) => resource,
+            Err(error) => {
+                if !error.is_serde() {
+                    log::warn!("failed to load {} from {}: {}", name, storage, error);
+                } else {
+                    log::warn!(
+                        "failed to load {} from {} due to a deserialization error",
+                        name,
+                        storage,
+                    );
+
+                    if revert_to_default_on_deserialization_errors {
+                        log::info!(
+                            "attempting to revert {} to default in {} automatically",
+                            name,
+                            storage,
+                        );
+
+                        let mut result = Persistent {
+                            name,
+                            format,
+                            storage,
+                            resource: None,
+                            default,
+                            revert_to_default_on_deserialization_errors,
+                        };
+                        if result.revert_to_default().is_err() {
+                            // return the original deserialization error
+                            return Err(error);
+                        }
+                        if loaded && result.revert_to_default_in_memory().is_err() {
+                            log::warn!("failed to revert {} to default in memory", result.name);
+                            // return the original deserialization error
+                            return Err(error);
+                        }
+
+                        return Ok(result);
+                    }
+                }
+                return Err(error);
+            },
+        };
 
         log::info!("loaded {} from {}", name, storage);
 
-        Ok(Persistent { name, format, storage, default, resource: Some(resource) })
+        Ok(Persistent {
+            name,
+            format,
+            storage,
+            resource: Some(resource),
+            default,
+            revert_to_default_on_deserialization_errors,
+        })
     }
 }
 
@@ -247,19 +320,34 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     ///
     /// If reloading fails, the underlying resource is kept untouched.
     pub fn reload(&mut self) -> Result<(), PersistenceError> {
-        self.resource = Some(self.storage.read(&self.name, self.format).map_err(|error| {
-            // serialization errors are already logged
-            if !error.is_serde() {
-                log::warn!("failed to reload {} from {}: {}", self.name, self.storage, error);
-            } else {
-                log::warn!(
-                    "failed to reload {} from {} due to a deserialization error",
-                    self.storage,
-                    self.name,
-                );
-            }
-            error
-        })?);
+        match self.storage.read(&self.name, self.format) {
+            Ok(resource) => self.resource = Some(resource),
+            Err(error) => {
+                if !error.is_serde() {
+                    log::warn!("failed to reload {} from {}: {}", self.name, self.storage, error);
+                } else {
+                    log::warn!(
+                        "failed to reload {} from {} due to a deserialization error",
+                        self.storage,
+                        self.name,
+                    );
+
+                    if self.revert_to_default_on_deserialization_errors {
+                        log::info!(
+                            "attempting to revert {} to default in {} automatically",
+                            self.name,
+                            self.storage,
+                        );
+                        if self.revert_to_default().is_err() {
+                            // return the original deserialization error
+                            return Err(error);
+                        }
+                        return Ok(());
+                    }
+                }
+                return Err(error);
+            },
+        }
         log::info!("reloaded {} from {}", self.name, self.storage);
         Ok(())
     }
@@ -300,17 +388,44 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 error
             })?;
 
-        if self.resource.is_some() {
-            // we need to copy the default resource without using clone
-            // this is because cloning can have special semantics
-            // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
-            // would change the default object, which is not desired
-            let serialized = self.format.serialize(&self.name, &self.default)?;
-            let reconstructed = self.format.deserialize(&self.name, &serialized)?;
-            self.resource = Some(reconstructed);
+        if self.is_loaded() {
+            self.revert_to_default_in_memory()?;
         }
 
-        log::info!("reverted {} to default", self.name);
+        Ok(())
+    }
+
+    /// Reverts the resource to it's default value only in memory, not persistent storage.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the resource is not revertible.
+    pub fn revert_to_default_in_memory(&mut self) -> Result<(), PersistenceError> {
+        if !self.is_revertible() {
+            panic!("tried to revert non-revertible {}", self.name);
+        }
+
+        // we need to make a copy of the default resource without using clone
+        // this is because cloning can have special semantics
+        // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
+        // would change the default object, which is not desired
+        let serialized = self.format.serialize(&self.name, &self.default).map_err(|error| {
+            log::warn!(
+                "failed to revert {} to default in memory due to a serialization error",
+                self.name,
+            );
+            error
+        })?;
+        let reconstructed = self.format.deserialize(&self.name, &serialized).map_err(|error| {
+            log::warn!(
+                "failed to revert {} to default in memory due to a deserialization error",
+                self.name,
+            );
+            error
+        })?;
+
+        self.resource = Some(reconstructed);
+        log::info!("reverted {} to default in memory", self.name);
         Ok(())
     }
 }

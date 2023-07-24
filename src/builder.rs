@@ -7,9 +7,10 @@ pub struct PersistentBuilder<R: Resource + Serialize + DeserializeOwned> {
     pub(crate) name: Option<String>,
     pub(crate) format: Option<StorageFormat>,
     pub(crate) path: Option<PathBuf>,
+    pub(crate) loaded: bool,
     pub(crate) default: Option<R>,
     pub(crate) revertible: bool,
-    pub(crate) loaded: bool,
+    pub(crate) revert_to_default_on_deserialization_errors: bool,
 }
 
 impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
@@ -31,6 +32,18 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         self
     }
 
+    /// Sets the initial loaded status of the resource.
+    pub fn loaded(mut self, loaded: bool) -> PersistentBuilder<R> {
+        self.loaded = loaded;
+        self
+    }
+
+    /// Sets the initial unloaded status of the resource.
+    pub fn unloaded(mut self, unloaded: bool) -> PersistentBuilder<R> {
+        self.loaded = !unloaded;
+        self
+    }
+
     /// Sets the default value of the resource.
     pub fn default(mut self, resource: R) -> PersistentBuilder<R> {
         self.default = Some(resource);
@@ -43,15 +56,13 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         self
     }
 
-    /// Sets the initial loaded status of the resource.
-    pub fn loaded(mut self, loaded: bool) -> PersistentBuilder<R> {
-        self.loaded = loaded;
-        self
-    }
-
-    /// Sets the initial unloaded status of the resource.
-    pub fn unloaded(mut self, unloaded: bool) -> PersistentBuilder<R> {
-        self.loaded = !unloaded;
+    /// Sets whether the the resource should be reverted to default on deserialization errors.
+    pub fn revert_to_default_on_deserialization_errors(
+        mut self,
+        revert_to_default_on_deserialization_errors: bool,
+    ) -> PersistentBuilder<R> {
+        self.revert_to_default_on_deserialization_errors =
+            revert_to_default_on_deserialization_errors;
         self
     }
 }
@@ -79,9 +90,11 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
         let name = self.name.unwrap();
         let format = self.format.unwrap();
         let path = self.path.unwrap();
+        let loaded = self.loaded;
         let default = self.default.unwrap();
         let revertible = self.revertible;
-        let loaded = self.loaded;
+        let revert_to_default_on_deserialization_errors =
+            self.revert_to_default_on_deserialization_errors;
 
         let storage = {
             #[cfg(not(target_family = "wasm"))]
@@ -106,6 +119,14 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
             }
         };
 
-        Persistent::new(name, format, storage, default, revertible, loaded)
+        Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )
     }
 }

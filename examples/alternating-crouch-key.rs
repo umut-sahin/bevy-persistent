@@ -43,6 +43,8 @@ fn setup(mut commands: Commands) {
             .format(StorageFormat::Toml)
             .path(config_dir.join("key-bindings.toml"))
             .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+            .revertible(true)
+            .revert_to_default_on_deserialization_errors(true)
             .build()
             .expect("failed to initialize key bindings"),
     )

@@ -14,13 +14,22 @@ mod native {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(!path.exists());
 
-        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(path.exists());
 
@@ -46,9 +55,10 @@ mod native {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         let existing_content = toml::to_string(&existing_resource)?;
@@ -56,7 +66,15 @@ mod native {
         std::fs::write(&path, &existing_content)?;
         assert!(path.exists());
 
-        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -80,13 +98,22 @@ mod native {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(path.exists());
 
@@ -125,13 +152,22 @@ mod native {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(path.exists());
 
@@ -175,13 +211,22 @@ mod native {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(path.exists());
 
@@ -232,13 +277,22 @@ mod native {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(path.exists());
 
@@ -313,13 +367,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -346,9 +409,10 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         let existing_content = toml::to_string(&existing_resource)?;
@@ -356,7 +420,15 @@ mod wasm {
         LocalStorage::set(key, existing_content.as_str())?;
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
-        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -381,13 +453,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -427,13 +508,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -478,13 +568,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -536,13 +635,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -609,13 +717,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -642,9 +759,10 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
         let existing_content = toml::to_string(&existing_resource)?;
@@ -652,7 +770,15 @@ mod wasm {
         SessionStorage::set(key, existing_content.as_str())?;
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
-        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -677,13 +803,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -723,13 +858,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -774,13 +918,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -832,13 +985,22 @@ mod wasm {
         let name = "key bindings";
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
+        let loaded = true;
         let default = KeyBindings::default();
         let revertible = false;
-        let loaded = true;
+        let revert_to_default_on_deserialization_errors = false;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
+        let mut resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
