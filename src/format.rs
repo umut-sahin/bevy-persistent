@@ -44,7 +44,7 @@ impl StorageFormat {
             #[cfg(feature = "bincode")]
             StorageFormat::Bincode => {
                 bincode::serialize(resource).map_err(|error| {
-                    log::warn!("failed to serialize {} to Bincode\n\n{}", name, error);
+                    log::error!("failed to serialize {} to Bincode\n\n{}", name, error);
                     PersistenceError::BincodeSerialization(error)
                 })
             },
@@ -53,7 +53,7 @@ impl StorageFormat {
                 serde_ini::to_string(resource)
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to INI\n\n{}", name, error);
+                        log::error!("failed to serialize {} to INI\n\n{}", name, error);
                         PersistenceError::IniSerialization(error)
                     })
             },
@@ -62,7 +62,7 @@ impl StorageFormat {
                 serde_json::to_string(resource)
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to JSON\n\n{}", name, error);
+                        log::error!("failed to serialize {} to JSON\n\n{}", name, error);
                         PersistenceError::JsonSerialization(error)
                     })
             },
@@ -71,7 +71,7 @@ impl StorageFormat {
                 serde_json::to_string_pretty(resource)
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to pretty JSON\n\n{}", name, error);
+                        log::error!("failed to serialize {} to pretty JSON\n\n{}", name, error);
                         PersistenceError::JsonSerialization(error)
                     })
             },
@@ -80,7 +80,7 @@ impl StorageFormat {
                 ron::to_string(resource)
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to RON\n\n{}", name, error);
+                        log::error!("failed to serialize {} to RON\n\n{}", name, error);
                         PersistenceError::RonSerialization(error)
                     })
             },
@@ -89,7 +89,7 @@ impl StorageFormat {
                 ron::ser::to_string_pretty(resource, Default::default())
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to pretty RON\n\n{}", name, error);
+                        log::error!("failed to serialize {} to pretty RON\n\n{}", name, error);
                         PersistenceError::RonSerialization(error)
                     })
             },
@@ -98,7 +98,7 @@ impl StorageFormat {
                 toml::to_string(resource)
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to TOML\n\n{}", name, error);
+                        log::error!("failed to serialize {} to TOML\n\n{}", name, error);
                         PersistenceError::TomlSerialization(error)
                     })
             },
@@ -107,7 +107,7 @@ impl StorageFormat {
                 toml::to_string(resource)
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to pretty TOML\n\n{}", name, error);
+                        log::error!("failed to serialize {} to pretty TOML\n\n{}", name, error);
                         PersistenceError::TomlSerialization(error)
                     })
             },
@@ -116,7 +116,7 @@ impl StorageFormat {
                 serde_yaml::to_string(resource)
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
-                        log::warn!("failed to serialize {} to YAML\n\n{}", name, error);
+                        log::error!("failed to serialize {} to YAML\n\n{}", name, error);
                         PersistenceError::YamlSerialization(error)
                     })
             },
@@ -133,7 +133,7 @@ impl StorageFormat {
         #[allow(irrefutable_let_patterns)]
         if let StorageFormat::Bincode = self {
             return bincode::deserialize::<R>(serialized_resource).map_err(|error| {
-                log::warn!("failed to parse {} as Bincode\n\n{}", name, error);
+                log::error!("failed to parse {} as Bincode\n\n{}", name, error);
                 PersistenceError::BincodeDeserialization(error)
             });
         }
@@ -141,7 +141,7 @@ impl StorageFormat {
         #[cfg(any(feature = "ini", feature = "json", feature = "toml", feature = "yaml"))]
         let serialized_resource_str =
             std::str::from_utf8(serialized_resource).map_err(|error| {
-                log::warn!("failed to decode {} as UTF-8\n\n{}", name, error);
+                log::error!("failed to decode {} as UTF-8\n\n{}", name, error);
                 PersistenceError::Encoding(error)
             })?;
 
@@ -151,56 +151,56 @@ impl StorageFormat {
             #[cfg(feature = "ini")]
             StorageFormat::Ini => {
                 serde_ini::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as INI\n\n{}", name, error);
+                    log::error!("failed to parse {} as INI\n\n{}", name, error);
                     PersistenceError::IniDeserialization(error)
                 })
             },
             #[cfg(feature = "json")]
             StorageFormat::Json => {
                 serde_json::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as JSON\n\n{}", name, error);
+                    log::error!("failed to parse {} as JSON\n\n{}", name, error);
                     PersistenceError::JsonDeserialization(error)
                 })
             },
             #[cfg(all(feature = "json", feature = "pretty"))]
             StorageFormat::JsonPretty => {
                 serde_json::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as pretty JSON\n\n{}", name, error);
+                    log::error!("failed to parse {} as pretty JSON\n\n{}", name, error);
                     PersistenceError::JsonDeserialization(error)
                 })
             },
             #[cfg(feature = "ron")]
             StorageFormat::Ron => {
                 ron::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as RON\n\n{}", name, error);
+                    log::error!("failed to parse {} as RON\n\n{}", name, error);
                     PersistenceError::RonDeserialization(error.into())
                 })
             },
             #[cfg(all(feature = "ron", feature = "pretty"))]
             StorageFormat::RonPretty => {
                 ron::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as pretty RON\n\n{}", name, error);
+                    log::error!("failed to parse {} as pretty RON\n\n{}", name, error);
                     PersistenceError::RonDeserialization(error.into())
                 })
             },
             #[cfg(feature = "toml")]
             StorageFormat::Toml => {
                 toml::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as TOML\n\n{}", name, error);
+                    log::error!("failed to parse {} as TOML\n\n{}", name, error);
                     PersistenceError::TomlDeserialization(error)
                 })
             },
             #[cfg(all(feature = "toml", feature = "pretty"))]
             StorageFormat::TomlPretty => {
                 toml::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as pretty TOML\n\n{}", name, error);
+                    log::error!("failed to parse {} as pretty TOML\n\n{}", name, error);
                     PersistenceError::TomlDeserialization(error)
                 })
             },
             #[cfg(feature = "yaml")]
             StorageFormat::Yaml => {
                 serde_yaml::from_str::<R>(serialized_resource_str).map_err(|error| {
-                    log::warn!("failed to parse {} as YAML\n\n{}", name, error);
+                    log::error!("failed to parse {} as YAML\n\n{}", name, error);
                     PersistenceError::YamlDeserialization(error)
                 })
             },

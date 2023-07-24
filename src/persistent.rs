@@ -63,7 +63,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
 
             storage.initialize().map_err(|error| {
                 // initialize can only return error for filesystem storage
-                log::warn!(
+                log::error!(
                     "failed to create the parent directory for {} at {}: {}",
                     name,
                     storage,
@@ -80,9 +80,9 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 .map_err(|error| {
                     // serialization errors are already logged
                     if !error.is_serde() {
-                        log::warn!("failed to save default {} to {}: {}", name, storage, error);
+                        log::error!("failed to save default {} to {}: {}", name, storage, error);
                     } else {
-                        log::warn!(
+                        log::error!(
                             "failed to save default {} to {} due to a serialization error",
                             name,
                             storage,
@@ -97,11 +97,11 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
                 // would change the default object, which is not desired
                 let serialized = format.serialize(&name, &default).map_err(|error| {
-                    log::warn!("failed to clone default {} due to a serialization error", name);
+                    log::error!("failed to clone default {} due to a serialization error", name);
                     error
                 })?;
                 let reconstructed = format.deserialize(&name, &serialized).map_err(|error| {
-                    log::warn!("failed to clone default {} due to a deserialization error", name);
+                    log::error!("failed to clone default {} due to a deserialization error", name);
                     error
                 })?;
 
@@ -138,9 +138,9 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             Ok(resource) => resource,
             Err(error) => {
                 if !error.is_serde() {
-                    log::warn!("failed to load {} from {}: {}", name, storage, error);
+                    log::error!("failed to load {} from {}: {}", name, storage, error);
                 } else {
-                    log::warn!(
+                    log::error!(
                         "failed to load {} from {} due to a deserialization error",
                         name,
                         storage,
@@ -166,7 +166,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                             return Err(error);
                         }
                         if loaded && result.revert_to_default_in_memory().is_err() {
-                            log::warn!("failed to revert {} to default in memory", result.name);
+                            log::error!("failed to revert {} to default in memory", result.name);
                             // return the original deserialization error
                             return Err(error);
                         }
@@ -294,7 +294,7 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     pub fn unload(&mut self) -> Result<(), PersistenceError> {
         if self.resource.is_some() {
             self.persist().map_err(|error| {
-                log::warn!(
+                log::error!(
                     "failed to unload {} due to not being able to persist it before unloading",
                     self.name,
                 );
@@ -324,9 +324,9 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             Ok(resource) => self.resource = Some(resource),
             Err(error) => {
                 if !error.is_serde() {
-                    log::warn!("failed to reload {} from {}: {}", self.name, self.storage, error);
+                    log::error!("failed to reload {} from {}: {}", self.name, self.storage, error);
                 } else {
-                    log::warn!(
+                    log::error!(
                         "failed to reload {} from {} due to a deserialization error",
                         self.storage,
                         self.name,
@@ -372,14 +372,14 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
             .map_err(|error| {
                 // serialization errors are logged in format module
                 if !error.is_serde() {
-                    log::warn!(
+                    log::error!(
                         "failed to revert {} to default in {}: {}",
                         self.name,
                         self.storage,
                         error,
                     );
                 } else {
-                    log::warn!(
+                    log::error!(
                         "failed to revert {} to default in {} due to a serialization error",
                         self.name,
                         self.storage,
@@ -410,14 +410,14 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
         // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
         // would change the default object, which is not desired
         let serialized = self.format.serialize(&self.name, &self.default).map_err(|error| {
-            log::warn!(
+            log::error!(
                 "failed to revert {} to default in memory due to a serialization error",
                 self.name,
             );
             error
         })?;
         let reconstructed = self.format.deserialize(&self.name, &serialized).map_err(|error| {
-            log::warn!(
+            log::error!(
                 "failed to revert {} to default in memory due to a deserialization error",
                 self.name,
             );
@@ -446,14 +446,14 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 .map_err(|error| {
                     // serialization errors are logged in format module
                     if !error.is_serde() {
-                        log::warn!(
+                        log::error!(
                             "failed to save new {} to {}: {}",
                             self.name,
                             self.storage,
                             error,
                         );
                     } else {
-                        log::warn!(
+                        log::error!(
                             "failed to save new {} to {} due to a serialization error",
                             self.name,
                             self.storage,
