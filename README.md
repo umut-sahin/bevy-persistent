@@ -125,7 +125,7 @@ fn persist_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
 
 ### Reverting
 
-It might make sense for some persistent resources to be reverted to default. Imagine having a settings page, it's a good idea to put revert to default button to this page because if players mess up, it'd be much easier if they can revert everything to its default state compared to manually adjusting keys.
+It might make sense for some persistent resources to be reverted to default. Imagine having a key bindings settings page, it's a good idea to put `Revert to default` button to this page because if players mess up their settings, it'd be much easier if they can revert everything to its default state compared to manually adjusting every key.
 
 Such persistent resources need to be created revertibly.
 
