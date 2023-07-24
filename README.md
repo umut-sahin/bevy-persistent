@@ -154,6 +154,29 @@ fn revert_key_bindings_to_default(key_bindings: Res<Persistent<KeyBindings>>) {
 }
 ```
 
+There is also an option to revert to default automatically on deserialization errors (e.g., bad modifications by the player). When enabled, if the persistent object cannot be loaded from the persistent storage due to its content, it'll be reverted to its default.
+
+```rust
+fn setup(mut commands: Commands) {
+    let config_dir = dirs::config_dir().unwrap().join("your-amazing-game");
+    commands.insert_resource(
+        Persistent::<KeyBindings>::builder()
+            .name("key bindings")
+            .format(StorageFormat::Toml)
+            .path(config_dir.join("key-bindings.toml"))
+            .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+            .revertible(true)
+            //^^^^^^^^^^^^^^^ requires this
+            .revert_to_default_on_deserialization_errors(true)
+            //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ enable with this
+            .build()
+            .expect("failed to initialize key bindings")
+    )
+}
+```
+
+If `key-bindings.toml` cannot be deserialized as a `KeyBindings` object, it'll be reverted to the specified default value in persistent storage.
+
 ### Unloading/Reloading
 
 Persistent resources are kept in memory by default. This might lead to unnecessarily high memory usage. To overcome this, you can use [unload](https://docs.rs/bevy-persistent/latest/bevy_persistent/persistent/struct.Persistent.html#method.unload) method.
@@ -246,6 +269,7 @@ fn correct_usage_of_unloaded_key_bindings(key_bindings: Res<Persistent<KeyBindin
 
     // can revert the persistent resource to its default
     key_bindings.revert_to_default(...);
+    key_bindings.revert_to_default_in_memory(...);
 }
 ```
 
@@ -347,13 +371,22 @@ fn setup(mut commands: Commands) {
     let name = "key bindings";
     let format = StorageFormat::Toml;
     let storage = Storage::LocalStorage { key: "key bindings".to_owned() };
+    let loaded = true;
     let default = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C };
     let revertible = false;
-    let loaded = true;
+    let revert_to_default_on_deserialization_errors = false;
 
     commands.insert_resource(
-        Persistent::new(name, format, storage, default, revertible, loaded)
-            .expect("failed to initialize key bindings")
+        Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )
+        .expect("failed to initialize key bindings"),
     );
 }
 ```
