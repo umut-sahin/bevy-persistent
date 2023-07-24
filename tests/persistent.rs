@@ -15,11 +15,12 @@ mod native {
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(!path.exists());
 
-        let resource = Persistent::new(name, format, storage, default, loaded)?;
+        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(path.exists());
 
@@ -46,6 +47,7 @@ mod native {
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
@@ -54,7 +56,7 @@ mod native {
         std::fs::write(&path, &existing_content)?;
         assert!(path.exists());
 
-        let resource = Persistent::new(name, format, storage, default, loaded)?;
+        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -79,11 +81,12 @@ mod native {
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(path.exists());
 
@@ -123,11 +126,12 @@ mod native {
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(path.exists());
 
@@ -172,11 +176,12 @@ mod native {
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(path.exists());
 
@@ -228,11 +233,12 @@ mod native {
         let format = StorageFormat::Toml;
         let storage = Storage::Filesystem { path: path.clone() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(!path.exists());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(path.exists());
 
@@ -308,11 +314,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let resource = Persistent::new(name, format, storage, default, loaded)?;
+        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -340,6 +347,7 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
@@ -348,7 +356,7 @@ mod wasm {
         LocalStorage::set(key, existing_content.as_str())?;
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
-        let resource = Persistent::new(name, format, storage, default, loaded)?;
+        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -374,11 +382,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -419,11 +428,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -469,11 +479,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -526,11 +537,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::LocalStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
 
@@ -598,11 +610,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let resource = Persistent::new(name, format, storage, default, loaded)?;
+        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -630,6 +643,7 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         let existing_resource = KeyBindings { jump: KeyCode::Space, crouch: KeyCode::ControlLeft };
@@ -638,7 +652,7 @@ mod wasm {
         SessionStorage::set(key, existing_content.as_str())?;
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
-        let resource = Persistent::new(name, format, storage, default, loaded)?;
+        let resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         let expected_resource = existing_resource;
         let actual_resource = resource.get();
@@ -664,11 +678,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -709,11 +724,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -759,11 +775,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
@@ -816,11 +833,12 @@ mod wasm {
         let format = StorageFormat::Toml;
         let storage = Storage::SessionStorage { key: key.to_owned() };
         let default = KeyBindings::default();
+        let revertible = false;
         let loaded = true;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_none());
 
-        let mut resource = Persistent::new(name, format, storage, default, loaded)?;
+        let mut resource = Persistent::new(name, format, storage, default, revertible, loaded)?;
 
         assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
 
