@@ -138,7 +138,13 @@ impl StorageFormat {
             });
         }
 
-        #[cfg(any(feature = "ini", feature = "json", feature = "toml", feature = "yaml"))]
+        #[cfg(any(
+            feature = "ini",
+            feature = "json",
+            feature = "ron",
+            feature = "toml",
+            feature = "yaml"
+        ))]
         let serialized_resource_str =
             std::str::from_utf8(serialized_resource).map_err(|error| {
                 log::error!("failed to decode {} as UTF-8\n\n{}", name, error);

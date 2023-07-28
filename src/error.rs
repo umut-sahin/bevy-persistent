@@ -21,7 +21,13 @@ pub enum PersistenceError {
         gloo_storage::errors::StorageError,
     ),
 
-    #[cfg(any(feature = "ini", feature = "json", feature = "toml", feature = "yaml"))]
+    #[cfg(any(
+        feature = "ini",
+        feature = "json",
+        feature = "ron",
+        feature = "toml",
+        feature = "yaml"
+    ))]
     #[error("{0}")]
     Encoding(
         #[from]
