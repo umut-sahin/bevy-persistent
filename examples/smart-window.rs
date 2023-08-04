@@ -11,10 +11,7 @@ use serde::{
     Deserialize,
     Serialize,
 };
-use std::{
-    ops::Deref,
-    path::Path,
-};
+use std::path::Path;
 
 #[derive(Resource, Serialize, Deserialize)]
 struct WindowState {
@@ -65,7 +62,7 @@ fn on_window_moved(
     window_state: ResMut<Persistent<WindowState>>,
 ) {
     if !events.is_empty() {
-        update_window_state(window_state, windows.single().deref());
+        update_window_state(window_state, windows.single());
     }
 }
 
@@ -75,7 +72,7 @@ fn on_window_resized(
     window_state: ResMut<Persistent<WindowState>>,
 ) {
     if !events.is_empty() {
-        update_window_state(window_state, windows.single().deref());
+        update_window_state(window_state, windows.single());
     }
 }
 
