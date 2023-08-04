@@ -17,6 +17,8 @@ pub enum StorageFormat {
     Ron,
     #[cfg(all(feature = "ron", feature = "pretty"))]
     RonPretty,
+    #[cfg(all(feature = "ron", feature = "pretty"))]
+    RonPrettyWithStructNames,
     #[cfg(feature = "toml")]
     Toml,
     #[cfg(all(feature = "toml", feature = "pretty"))]
@@ -86,10 +88,25 @@ impl StorageFormat {
             },
             #[cfg(all(feature = "ron", feature = "pretty"))]
             StorageFormat::RonPretty => {
-                ron::ser::to_string_pretty(resource, Default::default())
+                use ron::ser::PrettyConfig;
+                ron::ser::to_string_pretty(resource, PrettyConfig::new().struct_names(false))
                     .map(|serialized_resource| serialized_resource.into_bytes())
                     .map_err(|error| {
                         log::error!("failed to serialize {} to pretty RON\n\n{}", name, error);
+                        PersistenceError::RonSerialization(error)
+                    })
+            },
+            #[cfg(all(feature = "ron", feature = "pretty"))]
+            StorageFormat::RonPrettyWithStructNames => {
+                use ron::ser::PrettyConfig;
+                ron::ser::to_string_pretty(resource, PrettyConfig::new().struct_names(true))
+                    .map(|serialized_resource| serialized_resource.into_bytes())
+                    .map_err(|error| {
+                        log::error!(
+                            "failed to serialize {} to pretty RON with struct names\n\n{}",
+                            name,
+                            error,
+                        );
                         PersistenceError::RonSerialization(error)
                     })
             },
@@ -186,6 +203,17 @@ impl StorageFormat {
             StorageFormat::RonPretty => {
                 ron::from_str::<R>(serialized_resource_str).map_err(|error| {
                     log::error!("failed to parse {} as pretty RON\n\n{}", name, error);
+                    PersistenceError::RonDeserialization(error.into())
+                })
+            },
+            #[cfg(all(feature = "ron", feature = "pretty"))]
+            StorageFormat::RonPrettyWithStructNames => {
+                ron::from_str::<R>(serialized_resource_str).map_err(|error| {
+                    log::error!(
+                        "failed to parse {} as pretty RON with struct names\n\n{}",
+                        name,
+                        error,
+                    );
                     PersistenceError::RonDeserialization(error.into())
                 })
             },

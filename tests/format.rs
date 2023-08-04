@@ -120,12 +120,41 @@ mod native {
     #[test]
     #[cfg(all(feature = "ron", feature = "pretty"))]
     fn test_ron_pretty() -> anyhow::Result<()> {
+        use ron::ser::PrettyConfig;
+        let pretty_config = PrettyConfig::new().struct_names(false);
+
         let format = StorageFormat::RonPretty;
         let resource = KeyBindings::default();
 
         let actual_serialized_resource = format.serialize("key bindings", &resource).unwrap();
         let expected_serialized_resource =
-            ron::ser::to_string_pretty(&resource, Default::default()).unwrap().into_bytes();
+            ron::ser::to_string_pretty(&resource, pretty_config).unwrap().into_bytes();
+
+        assert_eq!(actual_serialized_resource, expected_serialized_resource);
+
+        let actual_deserialized_resource =
+            format.deserialize::<KeyBindings>("key bindings", &actual_serialized_resource).unwrap();
+        let expected_deserialized_resource =
+            ron::from_str::<KeyBindings>(std::str::from_utf8(&expected_serialized_resource)?)
+                .unwrap();
+
+        assert_eq!(expected_deserialized_resource, actual_deserialized_resource);
+
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(all(feature = "ron", feature = "pretty"))]
+    fn test_ron_pretty_with_struct_names() -> anyhow::Result<()> {
+        use ron::ser::PrettyConfig;
+        let pretty_config = PrettyConfig::new().struct_names(true);
+
+        let format = StorageFormat::RonPrettyWithStructNames;
+        let resource = KeyBindings::default();
+
+        let actual_serialized_resource = format.serialize("key bindings", &resource).unwrap();
+        let expected_serialized_resource =
+            ron::ser::to_string_pretty(&resource, pretty_config).unwrap().into_bytes();
 
         assert_eq!(actual_serialized_resource, expected_serialized_resource);
 
@@ -328,12 +357,41 @@ mod wasm {
     #[wasm_bindgen_test]
     #[cfg(all(feature = "ron", feature = "pretty"))]
     fn test_ron_pretty() -> anyhow::Result<()> {
+        use ron::ser::PrettyConfig;
+        let pretty_config = PrettyConfig::new().struct_names(false);
+
         let format = StorageFormat::RonPretty;
         let resource = KeyBindings::default();
 
         let actual_serialized_resource = format.serialize("key bindings", &resource).unwrap();
         let expected_serialized_resource =
-            ron::ser::to_string_pretty(&resource, Default::default()).unwrap().into_bytes();
+            ron::ser::to_string_pretty(&resource, pretty_config).unwrap().into_bytes();
+
+        assert_eq!(actual_serialized_resource, expected_serialized_resource);
+
+        let actual_deserialized_resource =
+            format.deserialize::<KeyBindings>("key bindings", &actual_serialized_resource).unwrap();
+        let expected_deserialized_resource =
+            ron::from_str::<KeyBindings>(std::str::from_utf8(&expected_serialized_resource)?)
+                .unwrap();
+
+        assert_eq!(expected_deserialized_resource, actual_deserialized_resource);
+
+        Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    #[cfg(all(feature = "ron", feature = "pretty"))]
+    fn test_ron_pretty_with_struct_names() -> anyhow::Result<()> {
+        use ron::ser::PrettyConfig;
+        let pretty_config = PrettyConfig::new().struct_names(true);
+
+        let format = StorageFormat::RonPrettyWithStructNames;
+        let resource = KeyBindings::default();
+
+        let actual_serialized_resource = format.serialize("key bindings", &resource).unwrap();
+        let expected_serialized_resource =
+            ron::ser::to_string_pretty(&resource, pretty_config).unwrap().into_bytes();
 
         assert_eq!(actual_serialized_resource, expected_serialized_resource);
 
