@@ -41,6 +41,7 @@ all = ["bincode", "ini", "json", "pretty", "ron", "toml", "yaml"]
 default = []
 ini = ["serde_ini"]
 json = ["serde_json"]
+library = []
 pretty = []
 yaml = ["serde_yaml"]
 

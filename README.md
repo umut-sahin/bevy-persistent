@@ -405,6 +405,29 @@ To run the examples in a browser using WebAssembly, you can use [wasm-server-run
 cargo run --release --features all --target wasm32-unknown-unknown --example name-of-the-example
 ```
 
+## Creating plugins on top
+
+If you want to create plugins that use persistent resources, you can use the `library` feature to avoid specifying storage formats.
+
+```toml
+[package]
+name = "bevy-amazing-library"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy-persistent = { version = "0.3" }
+
+[dev-dependencies]
+bevy-persistent = { version = "0.3", features = ["all"] }
+
+[features]
+default = []
+library = ["bevy-persistent/library"]
+```
+
+You can develop your library with `library` feature enabled (e.g., `cargo build --features library`), and [bevy-persistent](https://github.com/umut-sahin/bevy-persistent/) wouldn't complain when building your library, but applications would still get the error.
+
 ## Relation to
 
 ### bevy_pkv

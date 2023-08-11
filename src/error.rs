@@ -86,6 +86,14 @@ impl PersistenceError {
             #[cfg(target_family = "wasm")]
             PersistenceError::Browser(_) => false,
 
+            #[cfg(any(
+                feature = "bincode",
+                feature = "ini",
+                feature = "json",
+                feature = "ron",
+                feature = "toml",
+                feature = "yaml",
+            ))]
             _ => true,
         }
     }

@@ -73,6 +73,14 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
     /// # Panics
     ///
     /// Panics if `name`, `path`, `format` or `default` is not set.
+    #[cfg(any(
+        feature = "bincode",
+        feature = "ini",
+        feature = "json",
+        feature = "ron",
+        feature = "toml",
+        feature = "yaml",
+    ))]
     pub fn build(self) -> Result<Persistent<R>, PersistenceError> {
         if self.name.is_none() {
             panic!("persistent resource name is not set");
@@ -128,5 +136,17 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
             revertible,
             revert_to_default_on_deserialization_errors,
         )
+    }
+
+    #[cfg(not(any(
+        feature = "bincode",
+        feature = "ini",
+        feature = "json",
+        feature = "ron",
+        feature = "toml",
+        feature = "yaml",
+    )))]
+    pub fn build(self) -> Result<Persistent<R>, PersistenceError> {
+        unreachable!()
     }
 }

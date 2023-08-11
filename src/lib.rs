@@ -3,6 +3,7 @@
 
 #[rustfmt::skip]
 #[cfg(not(any(
+    feature = "library",
     feature = "bincode",
     feature = "ini",
     feature = "json",
