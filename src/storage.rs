@@ -70,51 +70,93 @@ impl Storage {
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
                 use gloo_storage::{
+                    errors::StorageError,
                     LocalStorage,
                     Storage,
                 };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
-                    return Ok(LocalStorage::get::<R>(key)?);
+                    return Ok(LocalStorage::get::<R>(key).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to parse {} as JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?);
                 }
                 #[cfg(all(feature = "json", feature = "pretty"))]
                 if format == StorageFormat::JsonPretty {
-                    return Ok(LocalStorage::get::<R>(key)?);
+                    return Ok(LocalStorage::get::<R>(key).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to parse {} as pretty JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?);
                 }
 
                 #[cfg(feature = "bincode")]
                 if format == StorageFormat::Bincode {
-                    let bytes = LocalStorage::get::<Vec<u8>>(key)?;
+                    let bytes = LocalStorage::get::<Vec<u8>>(key).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to get {} as a byte array\n\n{}", name, error);
+                        }
+                        error
+                    })?;
                     return format.deserialize::<R>(name, &bytes);
                 }
 
-                let content = LocalStorage::get::<String>(key)?;
+                let content = LocalStorage::get::<String>(key).map_err(|error| {
+                    if let StorageError::SerdeError(error) = &error {
+                        log::error!("failed to get {} as a string\n\n{}", name, error);
+                    }
+                    error
+                })?;
                 format.deserialize::<R>(name, content.as_bytes())
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
                 use gloo_storage::{
+                    errors::StorageError,
                     SessionStorage,
                     Storage,
                 };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
-                    return Ok(SessionStorage::get::<R>(key)?);
+                    return Ok(SessionStorage::get::<R>(key).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to parse {} as JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?);
                 }
                 #[cfg(all(feature = "json", feature = "pretty"))]
                 if format == StorageFormat::JsonPretty {
-                    return Ok(SessionStorage::get::<R>(key)?);
+                    return Ok(SessionStorage::get::<R>(key).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to parse {} as pretty JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?);
                 }
 
                 #[cfg(feature = "bincode")]
                 if format == StorageFormat::Bincode {
-                    let bytes = SessionStorage::get::<Vec<u8>>(key)?;
+                    let bytes = SessionStorage::get::<Vec<u8>>(key).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to get {} as a byte array\n\n{}", name, error);
+                        }
+                        error
+                    })?;
                     return format.deserialize::<R>(name, &bytes);
                 }
 
-                let content = SessionStorage::get::<String>(key)?;
+                let content = SessionStorage::get::<String>(key).map_err(|error| {
+                    if let StorageError::SerdeError(error) = &error {
+                        log::error!("failed to get {} as a string\n\n{}", name, error);
+                    }
+                    error
+                })?;
                 format.deserialize::<R>(name, content.as_bytes())
             },
         }
@@ -143,18 +185,29 @@ impl Storage {
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
                 use gloo_storage::{
+                    errors::StorageError,
                     LocalStorage,
                     Storage,
                 };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
-                    LocalStorage::set::<&R>(key, resource)?;
+                    LocalStorage::set::<&R>(key, resource).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to serialize {} to JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?;
                     return Ok(());
                 }
                 #[cfg(all(feature = "json", feature = "pretty"))]
                 if format == StorageFormat::JsonPretty {
-                    LocalStorage::set::<&R>(key, resource)?;
+                    LocalStorage::set::<&R>(key, resource).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to serialize {} to pretty JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?;
                     return Ok(());
                 }
 
@@ -176,18 +229,29 @@ impl Storage {
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
                 use gloo_storage::{
+                    errors::StorageError,
                     SessionStorage,
                     Storage,
                 };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
-                    SessionStorage::set::<&R>(key, resource)?;
+                    SessionStorage::set::<&R>(key, resource).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to serialize {} to JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?;
                     return Ok(());
                 }
                 #[cfg(all(feature = "json", feature = "pretty"))]
                 if format == StorageFormat::JsonPretty {
-                    SessionStorage::set::<&R>(key, resource)?;
+                    SessionStorage::set::<&R>(key, resource).map_err(|error| {
+                        if let StorageError::SerdeError(error) = &error {
+                            log::error!("failed to serialize {} to pretty JSON\n\n{}", name, error);
+                        }
+                        error
+                    })?;
                     return Ok(());
                 }
 

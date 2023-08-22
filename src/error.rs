@@ -84,7 +84,9 @@ impl PersistenceError {
             #[cfg(not(target_family = "wasm"))]
             PersistenceError::Filesystem(_) => false,
             #[cfg(target_family = "wasm")]
-            PersistenceError::Browser(_) => false,
+            PersistenceError::Browser(error) => {
+                matches!(error, gloo_storage::errors::StorageError::SerdeError(_))
+            },
 
             #[cfg(any(
                 feature = "bincode",
