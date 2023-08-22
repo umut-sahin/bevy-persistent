@@ -121,7 +121,9 @@ impl<R: Resource + Serialize + DeserializeOwned> PersistentBuilder<R> {
                 } else {
                     panic!(
                         "persistent resource path should start with \
-                        \"local\" or \"session\" and be UTF-8 encoded in WebAssembly",
+                        \"local\" or \"session\" and be UTF-8 encoded \
+                        in WebAssembly but it's {:?}",
+                        path,
                     );
                 }
             }
