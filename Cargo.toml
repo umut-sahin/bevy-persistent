@@ -10,6 +10,7 @@ license = "MIT OR Apache-2.0"
 authors = [
     "Umut Şahin <umutsahin@protonmail.com>",
     "Shane Lillie <ignignokterr@gmail.com>",
+    "Eri Pazos <eri@inventati.org>",
 ]
 
 [dependencies]
