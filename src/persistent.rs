@@ -166,7 +166,6 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                             return Err(error);
                         }
                         if loaded && result.revert_to_default_in_memory().is_err() {
-                            log::error!("failed to revert {} to default in memory", result.name);
                             // return the original deserialization error
                             return Err(error);
                         }
