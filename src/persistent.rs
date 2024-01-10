@@ -409,13 +409,14 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
         // this is because cloning can have special semantics
         // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
         // would change the default object, which is not desired
-        let serialized = self.format.serialize(&self.name, &self.default).map_err(|error| {
-            log::error!(
-                "failed to revert {} to default in memory due to a serialization error",
-                self.name,
-            );
-            error
-        })?;
+        let serialized =
+            self.format.serialize(&self.name, self.default.as_ref().unwrap()).map_err(|error| {
+                log::error!(
+                    "failed to revert {} to default in memory due to a serialization error",
+                    self.name,
+                );
+                error
+            })?;
         let reconstructed = self.format.deserialize(&self.name, &serialized).map_err(|error| {
             log::error!(
                 "failed to revert {} to default in memory due to a deserialization error",
