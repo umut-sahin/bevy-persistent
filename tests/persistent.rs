@@ -344,6 +344,47 @@ mod native {
 
         Ok(())
     }
+
+    #[test]
+    #[cfg(feature = "toml")]
+    fn revert_on_error() -> anyhow::Result<()> {
+        let tempdir = tempfile::tempdir()?;
+        let path = tempdir.path().join("key-bindings.toml");
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let storage = Storage::Filesystem { path: path.clone() };
+        let loaded = true;
+        let default = KeyBindings::default();
+        let revertible = true;
+        let revert_to_default_on_deserialization_errors = true;
+
+        std::fs::write(&path, "invalid keybindings")?;
+
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
+
+        assert!(path.exists());
+
+        let expected_resource = KeyBindings::default();
+        let actual_resource = resource.get();
+
+        assert_eq!(actual_resource, &expected_resource);
+
+        let expected_content = toml::to_string(&expected_resource)?;
+        let actual_content = std::fs::read_to_string(&path)?;
+
+        assert_eq!(expected_content.trim(), actual_content.trim());
+
+        Ok(())
+    }
 }
 
 #[cfg(target_family = "wasm")]
@@ -706,6 +747,48 @@ mod wasm {
         Ok(())
     }
 
+    #[wasm_bindgen_test]
+    #[cfg(feature = "toml")]
+    fn revert_on_error_local_storage() -> anyhow::Result<()> {
+        LocalStorage::clear();
+
+        let key = "key-bindings.toml";
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let storage = Storage::LocalStorage { key: key.to_owned() };
+        let loaded = true;
+        let default = KeyBindings::default();
+        let revertible = true;
+        let revert_to_default_on_deserialization_errors = true;
+
+        LocalStorage::raw().set_item(key, "invalid keybindings").unwrap();
+
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
+
+        assert!(LocalStorage::raw().get_item(key).unwrap().is_some());
+
+        let expected_resource = KeyBindings::default();
+        let actual_resource = resource.get();
+
+        assert_eq!(actual_resource, &expected_resource);
+
+        let expected_content = toml::to_string(&expected_resource)?;
+        let actual_content = LocalStorage::get::<String>(key)?;
+
+        assert_eq!(expected_content.trim(), actual_content.trim());
+
+        Ok(())
+    }
+
 
     #[wasm_bindgen_test]
     #[cfg(feature = "toml")]
@@ -1052,6 +1135,48 @@ mod wasm {
         let actual_new_content = SessionStorage::get::<String>(key)?;
 
         assert_eq!(expected_new_content.trim(), actual_new_content.trim());
+
+        Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    #[cfg(feature = "toml")]
+    fn revert_on_error_session_storage() -> anyhow::Result<()> {
+        SessionStorage::clear();
+
+        let key = "key-bindings.toml";
+
+        let name = "key bindings";
+        let format = StorageFormat::Toml;
+        let storage = Storage::SessionStorage { key: key.to_owned() };
+        let loaded = true;
+        let default = KeyBindings::default();
+        let revertible = true;
+        let revert_to_default_on_deserialization_errors = true;
+
+        SessionStorage::raw().set_item(key, "invalid keybindings").unwrap();
+
+        let resource = Persistent::new(
+            name,
+            format,
+            storage,
+            loaded,
+            default,
+            revertible,
+            revert_to_default_on_deserialization_errors,
+        )?;
+
+        assert!(SessionStorage::raw().get_item(key).unwrap().is_some());
+
+        let expected_resource = KeyBindings::default();
+        let actual_resource = resource.get();
+
+        assert_eq!(actual_resource, &expected_resource);
+
+        let expected_content = toml::to_string(&expected_resource)?;
+        let actual_content = SessionStorage::get::<String>(key)?;
+
+        assert_eq!(expected_content.trim(), actual_content.trim());
 
         Ok(())
     }
