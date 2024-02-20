@@ -17,6 +17,6 @@ pub struct KeyBindings {
 
 impl Default for KeyBindings {
     fn default() -> KeyBindings {
-        KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C }
+        KeyBindings { jump: KeyCode::Space, crouch: KeyCode::KeyC }
     }
 }

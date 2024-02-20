@@ -42,7 +42,7 @@ fn setup(mut commands: Commands) {
             .name("key bindings")
             .format(StorageFormat::Toml)
             .path(config_dir.join("key-bindings.toml"))
-            .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::C })
+            .default(KeyBindings { jump: KeyCode::Space, crouch: KeyCode::KeyC })
             .revertible(true)
             .revert_to_default_on_deserialization_errors(true)
             .build()
@@ -58,8 +58,8 @@ fn switch_crouch_key(mut key_bindings: ResMut<Persistent<KeyBindings>>) {
     key_bindings
         .update(|key_bindings| {
             key_bindings.crouch = match key_bindings.crouch {
-                KeyCode::C => KeyCode::ControlLeft,
-                KeyCode::ControlLeft => KeyCode::C,
+                KeyCode::KeyC => KeyCode::ControlLeft,
+                KeyCode::ControlLeft => KeyCode::KeyC,
                 _ => unimplemented!(),
             }
         })

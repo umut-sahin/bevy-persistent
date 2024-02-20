@@ -65,7 +65,7 @@ fn setup(
     commands.spawn(Camera2dBundle::default());
 
     commands.spawn(Player).insert(MaterialMesh2dBundle {
-        mesh: meshes.add(shape::Circle::new(PLAYER_SIZE).into()).into(),
+        mesh: meshes.add(Circle::new(PLAYER_SIZE)).into(),
         material: materials.add(ColorMaterial::from(Color::WHITE)),
         transform: Transform::from_translation(game_state.player_position),
         ..default()
@@ -79,7 +79,7 @@ fn setup(
 fn player_movement(
     time: Res<Time>,
 
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<&mut Transform, With<Player>>,
 
     mut game_state: ResMut<Persistent<GameState>>,
@@ -87,16 +87,16 @@ fn player_movement(
     if let Ok(mut transform) = player_query.get_single_mut() {
         let mut direction = Vec3::ZERO;
 
-        if keyboard_input.pressed(KeyCode::W) || keyboard_input.pressed(KeyCode::Up) {
+        if keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp) {
             direction += Vec3::new(0.0, 1.0, 0.0);
         }
-        if keyboard_input.pressed(KeyCode::A) || keyboard_input.pressed(KeyCode::Left) {
+        if keyboard_input.pressed(KeyCode::KeyA) || keyboard_input.pressed(KeyCode::ArrowLeft) {
             direction += Vec3::new(-1.0, 0.0, 0.0);
         }
-        if keyboard_input.pressed(KeyCode::S) || keyboard_input.pressed(KeyCode::Down) {
+        if keyboard_input.pressed(KeyCode::KeyS) || keyboard_input.pressed(KeyCode::ArrowDown) {
             direction += Vec3::new(0.0, -1.0, 0.0);
         }
-        if keyboard_input.pressed(KeyCode::D) || keyboard_input.pressed(KeyCode::Right) {
+        if keyboard_input.pressed(KeyCode::KeyD) || keyboard_input.pressed(KeyCode::ArrowRight) {
             direction += Vec3::new(1.0, 0.0, 0.0);
         }
 
