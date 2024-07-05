@@ -71,5 +71,5 @@ fn show_final_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
 }
 
 fn exit(mut exit: EventWriter<AppExit>) {
-    exit.send(AppExit);
+    exit.send(AppExit::Success);
 }

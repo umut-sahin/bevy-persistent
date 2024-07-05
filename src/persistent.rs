@@ -96,13 +96,11 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
                 // this is because cloning can have special semantics
                 // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
                 // would change the default object, which is not desired
-                let serialized = format.serialize(&name, &default).map_err(|error| {
+                let serialized = format.serialize(&name, &default).inspect_err(|_| {
                     log::error!("failed to clone default {} due to a serialization error", name);
-                    error
                 })?;
-                let reconstructed = format.deserialize(&name, &serialized).map_err(|error| {
+                let reconstructed = format.deserialize(&name, &serialized).inspect_err(|_| {
                     log::error!("failed to clone default {} due to a deserialization error", name);
-                    error
                 })?;
 
                 Some(reconstructed)
@@ -292,12 +290,11 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
     /// Panics if the resource is unloaded.
     pub fn unload(&mut self) -> Result<(), PersistenceError> {
         if self.resource.is_some() {
-            self.persist().map_err(|error| {
+            self.persist().inspect_err(|_| {
                 log::error!(
                     "failed to unload {} due to not being able to persist it before unloading",
                     self.name,
                 );
-                error
             })?;
             self.resource = None;
             log::info!("unloaded {}", self.name);
@@ -408,20 +405,20 @@ impl<R: Resource + Serialize + DeserializeOwned> Persistent<R> {
         // this is because cloning can have special semantics
         // e.g., cloning Persistent<Arc<RwLock<R>>> and changing it
         // would change the default object, which is not desired
-        let serialized =
-            self.format.serialize(&self.name, self.default.as_ref().unwrap()).map_err(|error| {
+        let serialized = self
+            .format
+            .serialize(&self.name, self.default.as_ref().unwrap())
+            .inspect_err(|_| {
                 log::error!(
                     "failed to revert {} to default in memory due to a serialization error",
                     self.name,
                 );
-                error
             })?;
-        let reconstructed = self.format.deserialize(&self.name, &serialized).map_err(|error| {
+        let reconstructed = self.format.deserialize(&self.name, &serialized).inspect_err(|_| {
             log::error!(
                 "failed to revert {} to default in memory due to a deserialization error",
                 self.name,
             );
-            error
         })?;
 
         self.resource = Some(reconstructed);
