@@ -115,15 +115,10 @@ mod native {
     }
 }
 
-
 #[cfg(target_family = "wasm")]
 mod wasm {
     use super::*;
-    use gloo_storage::{
-        LocalStorage,
-        SessionStorage,
-        Storage as _,
-    };
+    use gloo_storage::{LocalStorage, SessionStorage, Storage as _};
     use wasm_bindgen_test::*;
 
     #[wasm_bindgen_test]
@@ -149,10 +144,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::LocalStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::LocalStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
         assert_eq!(resource.get(), &default);
 
         Ok(())
@@ -182,10 +176,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::LocalStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::LocalStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
 
         assert!(!resource.is_loaded());
         assert!(resource.is_unloaded());
@@ -229,10 +222,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::SessionStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::SessionStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
         assert_eq!(resource.get(), &default);
 
         Ok(())
@@ -262,10 +254,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::SessionStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::SessionStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
 
         assert!(!resource.is_loaded());
         assert!(resource.is_unloaded());

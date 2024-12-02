@@ -390,13 +390,8 @@ mod native {
 #[cfg(target_family = "wasm")]
 mod wasm {
     use super::*;
-    use gloo_storage::{
-        LocalStorage,
-        SessionStorage,
-        Storage as _,
-    };
+    use gloo_storage::{LocalStorage, SessionStorage, Storage as _};
     use wasm_bindgen_test::*;
-
 
     #[wasm_bindgen_test]
     #[cfg(feature = "toml")]
@@ -789,7 +784,6 @@ mod wasm {
         Ok(())
     }
 
-
     #[wasm_bindgen_test]
     #[cfg(feature = "toml")]
     fn create_non_existing_session_storage() -> anyhow::Result<()> {
@@ -1180,7 +1174,6 @@ mod wasm {
 
         Ok(())
     }
-
 
     wasm_bindgen_test_configure!(run_in_browser);
 }

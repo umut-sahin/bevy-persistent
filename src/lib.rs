@@ -28,9 +28,6 @@ pub mod prelude;
 pub mod storage;
 
 pub use crate::{
-    builder::PersistentBuilder,
-    error::PersistenceError,
-    format::StorageFormat,
-    persistent::Persistent,
-    storage::Storage,
+    builder::PersistentBuilder, error::PersistenceError, format::StorageFormat,
+    persistent::Persistent, storage::Storage,
 };
