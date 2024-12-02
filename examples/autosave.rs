@@ -62,14 +62,13 @@ fn setup(
 
     game_state: Res<Persistent<GameState>>,
 ) {
-    commands.spawn(Camera2dBundle::default());
-
-    commands.spawn(Player).insert(MaterialMesh2dBundle {
-        mesh: meshes.add(Circle::new(PLAYER_SIZE)).into(),
-        material: materials.add(ColorMaterial::from(Color::WHITE)),
-        transform: Transform::from_translation(game_state.player_position),
-        ..default()
-    });
+    commands.spawn(Camera2d);
+    commands.spawn((
+        Mesh2d(meshes.add(Circle::new(PLAYER_SIZE)).into()),
+        MeshMaterial2d(materials.add(ColorMaterial::from(Color::WHITE))),
+        Transform::from_translation(game_state.player_position),
+        Player,
+    ));
 
     commands.insert_resource(AutosaveTimer {
         timer: Timer::new(Duration::from_secs_f32(AUTOSAVE_INTERVAL_SECONDS), TimerMode::Repeating),
@@ -105,7 +104,7 @@ fn player_movement(
         }
 
         direction = direction.normalize();
-        transform.translation += direction * PLAYER_SPEED * time.delta_seconds();
+        transform.translation += direction * PLAYER_SPEED * time.delta_secs();
 
         game_state.player_position = transform.translation;
     }
