@@ -13,6 +13,7 @@ authors = [
     "Eri Pazos <eri@inventati.org>",
     "Scott Godwin <sgodwincs@gmail.com>",
     "Helium <liqhelium@gmail.com>",
+    "Fallible <fallible.things@gmail.com>"
 ]
 
 [dependencies]
