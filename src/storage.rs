@@ -70,9 +70,9 @@ impl Storage {
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
                 use gloo_storage::{
-                    errors::StorageError,
                     LocalStorage,
                     Storage,
+                    errors::StorageError,
                 };
 
                 #[cfg(feature = "json")]
@@ -112,9 +112,9 @@ impl Storage {
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
                 use gloo_storage::{
-                    errors::StorageError,
                     SessionStorage,
                     Storage,
+                    errors::StorageError,
                 };
 
                 #[cfg(feature = "json")]
@@ -177,9 +177,9 @@ impl Storage {
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
                 use gloo_storage::{
-                    errors::StorageError,
                     LocalStorage,
                     Storage,
+                    errors::StorageError,
                 };
 
                 #[cfg(feature = "json")]
@@ -219,9 +219,9 @@ impl Storage {
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
                 use gloo_storage::{
-                    errors::StorageError,
                     SessionStorage,
                     Storage,
+                    errors::StorageError,
                 };
 
                 #[cfg(feature = "json")]

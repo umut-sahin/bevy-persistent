@@ -149,10 +149,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::LocalStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::LocalStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
         assert_eq!(resource.get(), &default);
 
         Ok(())
@@ -182,10 +181,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::LocalStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::LocalStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
 
         assert!(!resource.is_loaded());
         assert!(resource.is_unloaded());
@@ -229,10 +227,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::SessionStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::SessionStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
         assert_eq!(resource.get(), &default);
 
         Ok(())
@@ -262,10 +259,9 @@ mod wasm {
 
         assert_eq!(resource.name(), name);
         assert_eq!(resource.format(), format);
-        assert_eq!(
-            resource.storage(),
-            &Storage::SessionStorage { key: "key-bindings.toml".to_owned() },
-        );
+        assert_eq!(resource.storage(), &Storage::SessionStorage {
+            key: "key-bindings.toml".to_owned()
+        },);
 
         assert!(!resource.is_loaded());
         assert!(resource.is_unloaded());

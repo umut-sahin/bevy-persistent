@@ -10,8 +10,8 @@ pub(crate) use bevy::{
     prelude::*,
 };
 pub(crate) use serde::{
-    de::DeserializeOwned,
     Serialize,
+    de::DeserializeOwned,
 };
 pub(crate) use std::{
     fmt::{
