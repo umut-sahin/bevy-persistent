@@ -7,3 +7,6 @@ Cargo.lock
 
 # Visual Studio Code
 .vscode
+
+# From running within this directory
+/local

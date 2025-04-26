@@ -17,7 +17,7 @@ authors = [
 ]
 
 [dependencies]
-bevy = { version = "0.15", default-features = false }
+bevy = { version = "0.16", default-features = false, features = ["std", "bevy_log"] }
 bincode = { version = "1.3", optional = true }
 ron = { version = "0.8", optional = true }
 serde = { version = "1.0" }
@@ -33,7 +33,8 @@ gloo-storage = { version = "0.3" }
 [dev-dependencies]
 anyhow = { version = "1.0" }
 dirs = { version = "5.0" }
-bevy = { version = "0.15", features = ["serialize"] }
+bevy = { version = "0.16", features = ["serialize", "std", "bevy_log"] }
+
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
 tempfile = { version = "3.4" }

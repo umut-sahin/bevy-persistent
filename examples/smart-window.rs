@@ -58,21 +58,21 @@ fn main() {
 
 fn on_window_moved(
     events: EventReader<WindowMoved>,
-    windows: Query<&Window>,
+    windows: Single<&Window>,
     window_state: ResMut<Persistent<WindowState>>,
 ) {
     if !events.is_empty() {
-        update_window_state(window_state, windows.single());
+        update_window_state(window_state, &windows);
     }
 }
 
 fn on_window_resized(
     events: EventReader<WindowResized>,
-    windows: Query<&Window>,
+    windows: Single<&Window>,
     window_state: ResMut<Persistent<WindowState>>,
 ) {
     if !events.is_empty() {
-        update_window_state(window_state, windows.single());
+        update_window_state(window_state, &windows);
     }
 }
 
