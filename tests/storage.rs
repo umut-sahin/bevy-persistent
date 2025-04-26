@@ -48,7 +48,7 @@ mod native {
         let path = tempdir.path().join("key-bindings.toml");
         let storage = Storage::Filesystem { path: path.clone() };
 
-        assert_eq!(format!("{}", storage), format!("{}", path.to_str().unwrap()));
+        assert_eq!(format!("{storage}"), format!("{}", path.to_str().unwrap()));
 
         Ok(())
     }

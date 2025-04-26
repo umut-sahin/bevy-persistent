@@ -269,20 +269,20 @@ impl Display for Storage {
             #[cfg(not(target_family = "wasm"))]
             Storage::Filesystem { path } => {
                 if let Some(path) = path.to_str() {
-                    write!(f, "{}", path)
+                    write!(f, "{path}")
                 } else {
-                    write!(f, "{:?}", path)
+                    write!(f, "{path:?}")
                 }
             },
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
                 let separator = std::path::MAIN_SEPARATOR;
-                write!(f, "{}local{}{}", separator, separator, key)
+                write!(f, "{separator}local{separator}{key}")
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
                 let separator = std::path::MAIN_SEPARATOR;
-                write!(f, "{}session{}{}", separator, separator, key)
+                write!(f, "{separator}session{separator}{key}")
             },
         }
     }
