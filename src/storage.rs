@@ -269,9 +269,9 @@ impl Display for Storage {
             #[cfg(not(target_family = "wasm"))]
             Storage::Filesystem { path } => {
                 if let Some(path) = path.to_str() {
-                    write!(f, "{}", path)
+                    write!(f, "{path}")
                 } else {
-                    write!(f, "{:?}", path)
+                    write!(f, "{path:?}")
                 }
             },
             #[cfg(target_family = "wasm")]
