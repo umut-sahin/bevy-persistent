@@ -277,12 +277,12 @@ impl Display for Storage {
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
                 let separator = std::path::MAIN_SEPARATOR;
-                write!(f, "{}local{}{}", separator, separator, key)
+                write!(f, "{separator}local{separator}{key}")
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
                 let separator = std::path::MAIN_SEPARATOR;
-                write!(f, "{}session{}{}", separator, separator, key)
+                write!(f, "{separator}session{separator}{key}")
             },
         }
     }
