@@ -416,10 +416,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy-persistent = { version = "0.7" }
+bevy-persistent = { version = "0.8" }
 
 [dev-dependencies]
-bevy-persistent = { version = "0.7", features = ["all"] }
+bevy-persistent = { version = "0.8", features = ["all"] }
 
 [features]
 default = []
