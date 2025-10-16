@@ -57,7 +57,7 @@ fn main() {
 }
 
 fn on_window_moved(
-    events: EventReader<WindowMoved>,
+    events: MessageReader<WindowMoved>,
     windows: Single<&Window>,
     window_state: ResMut<Persistent<WindowState>>,
 ) {
@@ -67,7 +67,7 @@ fn on_window_moved(
 }
 
 fn on_window_resized(
-    events: EventReader<WindowResized>,
+    events: MessageReader<WindowResized>,
     windows: Single<&Window>,
     window_state: ResMut<Persistent<WindowState>>,
 ) {

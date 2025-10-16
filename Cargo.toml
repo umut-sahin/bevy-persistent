@@ -13,11 +13,13 @@ authors = [
     "Eri Pazos <eri@inventati.org>",
     "Scott Godwin <sgodwincs@gmail.com>",
     "Helium <liqhelium@gmail.com>",
-    "Fallible <fallible.things@gmail.com>"
+    "Fallible <fallible.things@gmail.com>",
 ]
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = ["std", "bevy_log"] }
+bevy_ecs = { version = "0.17.2" }
+bevy_reflect = { version = "0.17.2" }
+log = { version = "0.4" }
 bincode = { version = "1.3", optional = true }
 ron = { version = "0.8", optional = true }
 serde = { version = "1.0" }
@@ -33,7 +35,7 @@ gloo-storage = { version = "0.3" }
 [dev-dependencies]
 anyhow = { version = "1.0" }
 dirs = { version = "5.0" }
-bevy = { version = "0.16", features = ["serialize", "std", "bevy_log"] }
+bevy = { version = "0.17.2", features = ["serialize", "std", "bevy_log"] }
 
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]

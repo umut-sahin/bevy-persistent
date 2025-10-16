@@ -70,6 +70,6 @@ fn show_final_key_bindings(key_bindings: Res<Persistent<KeyBindings>>) {
     log::info!("final key bindings: {:?}", key_bindings.get());
 }
 
-fn exit(mut exit: EventWriter<AppExit>) {
+fn exit(mut exit: MessageWriter<AppExit>) {
     exit.send(AppExit::Success);
 }
