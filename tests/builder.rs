@@ -118,7 +118,11 @@ mod native {
 #[cfg(target_family = "wasm")]
 mod wasm {
     use super::*;
-    use gloo_storage::{LocalStorage, SessionStorage, Storage as _};
+    use gloo_storage::{
+        LocalStorage,
+        SessionStorage,
+        Storage as _,
+    };
     use wasm_bindgen_test::*;
 
     #[wasm_bindgen_test]

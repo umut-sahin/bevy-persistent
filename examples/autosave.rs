@@ -1,7 +1,13 @@
 use bevy::prelude::*;
 use bevy_persistent::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::{path::Path, time::Duration};
+use serde::{
+    Deserialize,
+    Serialize,
+};
+use std::{
+    path::Path,
+    time::Duration,
+};
 
 const PLAYER_SIZE: f32 = 50.00;
 const PLAYER_SPEED: f32 = 500.00;

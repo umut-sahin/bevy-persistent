@@ -1,6 +1,13 @@
-use bevy::{app::AppExit, log, prelude::*};
+use bevy::{
+    app::AppExit,
+    log,
+    prelude::*,
+};
 use bevy_persistent::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use std::path::Path;
 
 #[derive(Debug, Deserialize, Resource, Serialize)]

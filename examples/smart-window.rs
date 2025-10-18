@@ -1,10 +1,16 @@
 use bevy::{
     log::LogPlugin,
     prelude::*,
-    window::{WindowResized, WindowResolution},
+    window::{
+        WindowResized,
+        WindowResolution,
+    },
 };
 use bevy_persistent::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 use std::path::Path;
 
 #[derive(Resource, Serialize, Deserialize)]

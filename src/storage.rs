@@ -38,12 +38,18 @@ impl Storage {
             Storage::Filesystem { path } => path.exists(),
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
-                use gloo_storage::{LocalStorage, Storage};
+                use gloo_storage::{
+                    LocalStorage,
+                    Storage,
+                };
                 matches!(LocalStorage::raw().get_item(key), Ok(Some(_)))
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
-                use gloo_storage::{SessionStorage, Storage};
+                use gloo_storage::{
+                    SessionStorage,
+                    Storage,
+                };
                 matches!(SessionStorage::raw().get_item(key), Ok(Some(_)))
             },
         }
@@ -63,7 +69,11 @@ impl Storage {
             },
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
-                use gloo_storage::{LocalStorage, Storage, errors::StorageError};
+                use gloo_storage::{
+                    LocalStorage,
+                    Storage,
+                    errors::StorageError,
+                };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
@@ -101,7 +111,11 @@ impl Storage {
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
-                use gloo_storage::{SessionStorage, Storage, errors::StorageError};
+                use gloo_storage::{
+                    SessionStorage,
+                    Storage,
+                    errors::StorageError,
+                };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
@@ -162,7 +176,11 @@ impl Storage {
             },
             #[cfg(target_family = "wasm")]
             Storage::LocalStorage { key } => {
-                use gloo_storage::{LocalStorage, Storage, errors::StorageError};
+                use gloo_storage::{
+                    LocalStorage,
+                    Storage,
+                    errors::StorageError,
+                };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
@@ -200,7 +218,11 @@ impl Storage {
             },
             #[cfg(target_family = "wasm")]
             Storage::SessionStorage { key } => {
-                use gloo_storage::{SessionStorage, Storage, errors::StorageError};
+                use gloo_storage::{
+                    SessionStorage,
+                    Storage,
+                    errors::StorageError,
+                };
 
                 #[cfg(feature = "json")]
                 if format == StorageFormat::Json {
