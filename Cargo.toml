@@ -36,6 +36,7 @@ gloo-storage = { version = "0.3" }
 anyhow = { version = "1.0" }
 dirs = { version = "5.0" }
 bevy = { version = "0.17.2", features = ["serialize", "std", "bevy_log"] }
+bevy-persistent = { path = ".", features = ["all"] }
 
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]

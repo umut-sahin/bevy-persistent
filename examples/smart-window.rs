@@ -40,8 +40,8 @@ fn main() {
     let title = "I am a smart window!".to_owned();
     let position = WindowPosition::At(IVec2::from(persistent_window_state.position));
     let resolution = WindowResolution::new(
-        persistent_window_state.size.0 as f32,
-        persistent_window_state.size.1 as f32,
+        persistent_window_state.size.0 as u32,
+        persistent_window_state.size.1 as u32,
     );
 
     app.add_plugins(DefaultPlugins.build().disable::<LogPlugin>().set(WindowPlugin {
