@@ -57,13 +57,8 @@ mod native {
 #[cfg(target_family = "wasm")]
 mod wasm {
     use super::*;
-    use gloo_storage::{
-        LocalStorage,
-        SessionStorage,
-        Storage as _,
-    };
+    use gloo_storage::{LocalStorage, SessionStorage, Storage as _};
     use wasm_bindgen_test::*;
-
 
     #[wasm_bindgen_test]
     fn local_storage_initialize() -> anyhow::Result<()> {
@@ -104,7 +99,6 @@ mod wasm {
         Ok(())
     }
 
-
     #[wasm_bindgen_test]
     fn session_storage_initialize() -> anyhow::Result<()> {
         let key = "key-bindings.toml";
@@ -143,7 +137,6 @@ mod wasm {
 
         Ok(())
     }
-
 
     wasm_bindgen_test_configure!(run_in_browser);
 }
