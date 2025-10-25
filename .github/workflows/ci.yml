@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Platform Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Cache Rust
         uses: actions/cache@v3
@@ -77,7 +77,7 @@ jobs:
 
       - name: Install Platform Dependencies
         if: runner.os == 'linux'
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Cache Rust
         uses: actions/cache@v3
@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Platform Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev firefox
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev firefox libwayland-dev
 
       - name: Install Chrome
         uses: browser-actions/setup-chrome@v1
@@ -208,7 +208,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Platform Dependencies
-        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1

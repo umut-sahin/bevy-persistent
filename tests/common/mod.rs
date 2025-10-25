@@ -1,4 +1,4 @@
-#![allow(unused_imports)]
+#![allow(unused)]
 
 pub use bevy::prelude::*;
 pub use bevy_persistent::{
