@@ -17,8 +17,10 @@ authors = [
 ]
 
 [dependencies]
-bevy = { version = "0.17", default-features = false, features = ["std", "bevy_log"] }
+bevy_ecs = { version = "0.17" }
+bevy_reflect = { version = "0.17" }
 bincode = { version = "1.3", optional = true }
+log = { version = "0.4" }
 ron = { version = "0.11", optional = true }
 serde = { version = "1.0" }
 serde_ini = { version = "0.2", optional = true }

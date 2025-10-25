@@ -5,10 +5,8 @@ pub(crate) use crate::{
     error::PersistenceError,
     storage::Storage,
 };
-pub(crate) use bevy::{
-    log,
-    prelude::*,
-};
+pub(crate) use bevy_ecs::prelude::*;
+pub(crate) use bevy_reflect::Reflect;
 pub(crate) use serde::{
     Serialize,
     de::DeserializeOwned,
