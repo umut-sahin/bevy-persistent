@@ -80,7 +80,7 @@ fn player_movement(
 
     mut game_state: ResMut<Persistent<GameState>>,
 ) {
-    if let Ok(mut transform) = player_query.get_single_mut() {
+    if let Ok(mut transform) = player_query.single_mut() {
         let mut direction = Vec3::ZERO;
 
         if keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp) {
@@ -113,7 +113,7 @@ fn autosave(
     game_state: Res<Persistent<GameState>>,
 ) {
     autosave.timer.tick(time.delta());
-    if autosave.timer.finished() {
+    if autosave.timer.is_finished() {
         game_state.persist().ok();
     }
 }

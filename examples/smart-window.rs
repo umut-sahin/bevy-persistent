@@ -39,10 +39,8 @@ fn main() {
 
     let title = "I am a smart window!".to_owned();
     let position = WindowPosition::At(IVec2::from(persistent_window_state.position));
-    let resolution = WindowResolution::new(
-        persistent_window_state.size.0 as f32,
-        persistent_window_state.size.1 as f32,
-    );
+    let resolution =
+        WindowResolution::new(persistent_window_state.size.0, persistent_window_state.size.1);
 
     app.add_plugins(DefaultPlugins.build().disable::<LogPlugin>().set(WindowPlugin {
         primary_window: Some(Window { title, position, resolution, ..Default::default() }),
@@ -57,7 +55,7 @@ fn main() {
 }
 
 fn on_window_moved(
-    events: EventReader<WindowMoved>,
+    events: MessageReader<WindowMoved>,
     windows: Single<&Window>,
     window_state: ResMut<Persistent<WindowState>>,
 ) {
@@ -67,7 +65,7 @@ fn on_window_moved(
 }
 
 fn on_window_resized(
-    events: EventReader<WindowResized>,
+    events: MessageReader<WindowResized>,
     windows: Single<&Window>,
     window_state: ResMut<Persistent<WindowState>>,
 ) {
