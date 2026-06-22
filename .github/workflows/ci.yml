@@ -112,6 +112,8 @@ jobs:
   test-chrome-firefox:
     name: Test (chrome, firefox)
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-Zunstable-options -Clinker-features=-lld"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -139,7 +141,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: nightly
           target: wasm32-unknown-unknown
           override: true
 
