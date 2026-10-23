@@ -45,10 +45,12 @@ impl StorageFormat {
         match self {
             #[cfg(feature = "bincode")]
             StorageFormat::Bincode => {
-                bincode::serialize(resource).map_err(|error| {
-                    log::error!("failed to serialize {} to Bincode\n\n{}", name, error);
-                    PersistenceError::BincodeSerialization(error)
-                })
+                bincode::serde::encode_to_vec(resource, bincode::config::legacy()).map_err(
+                    |error| {
+                        log::error!("failed to serialize {} to Bincode\n\n{}", name, error);
+                        PersistenceError::BincodeSerialization(error)
+                    },
+                )
             },
             #[cfg(feature = "ini")]
             StorageFormat::Ini => {
@@ -149,7 +151,12 @@ impl StorageFormat {
         #[cfg(feature = "bincode")]
         #[allow(irrefutable_let_patterns)]
         if let StorageFormat::Bincode = self {
-            return bincode::deserialize::<R>(serialized_resource).map_err(|error| {
+            return bincode::serde::decode_from_slice(
+                serialized_resource,
+                bincode::config::legacy(),
+            )
+            .map(|(resource, _)| resource)
+            .map_err(|error| {
                 log::error!("failed to parse {} as Bincode\n\n{}", name, error);
                 PersistenceError::BincodeDeserialization(error)
             });

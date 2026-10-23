@@ -37,10 +37,10 @@ pub enum PersistenceError {
 
     #[cfg(feature = "bincode")]
     #[error("{0}")]
-    BincodeDeserialization(#[source] bincode::Error),
+    BincodeDeserialization(#[source] bincode::error::DecodeError),
     #[cfg(feature = "bincode")]
     #[error("{0}")]
-    BincodeSerialization(#[source] bincode::Error),
+    BincodeSerialization(#[source] bincode::error::EncodeError),
 
     #[cfg(feature = "ini")]
     #[error("{0}")]
