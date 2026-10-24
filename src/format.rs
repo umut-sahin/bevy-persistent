@@ -7,6 +7,8 @@ use crate::prelude::*;
 pub enum StorageFormat {
     #[cfg(feature = "bincode")]
     Bincode,
+    #[cfg(feature = "bincode")]
+    BincodeLegacy,
     #[cfg(feature = "ini")]
     Ini,
     #[cfg(feature = "json")]
@@ -36,6 +38,11 @@ pub enum StorageFormat {
     feature = "yaml",
 ))]
 impl StorageFormat {
+    #[cfg(all(feature = "bincode", target_family = "wasm"))]
+    pub(crate) fn is_bincode(self) -> bool {
+        matches!(self, StorageFormat::Bincode | StorageFormat::BincodeLegacy)
+    }
+
     /// Serializes a resource into bytes.
     pub fn serialize<R: Serialize + DeserializeOwned>(
         self,
@@ -45,9 +52,18 @@ impl StorageFormat {
         match self {
             #[cfg(feature = "bincode")]
             StorageFormat::Bincode => {
-                bincode::serde::encode_to_vec(resource, bincode::config::legacy()).map_err(
+                bincode::serde::encode_to_vec(resource, bincode::config::standard()).map_err(
                     |error| {
                         log::error!("failed to serialize {} to Bincode\n\n{}", name, error);
+                        PersistenceError::BincodeSerialization(error)
+                    },
+                )
+            },
+            #[cfg(feature = "bincode")]
+            StorageFormat::BincodeLegacy => {
+                bincode::serde::encode_to_vec(resource, bincode::config::legacy()).map_err(
+                    |error| {
+                        log::error!("failed to serialize {} to legacy Bincode\n\n{}", name, error);
                         PersistenceError::BincodeSerialization(error)
                     },
                 )
@@ -149,15 +165,27 @@ impl StorageFormat {
         serialized_resource: &[u8],
     ) -> Result<R, PersistenceError> {
         #[cfg(feature = "bincode")]
-        #[allow(irrefutable_let_patterns)]
         if let StorageFormat::Bincode = self {
+            return bincode::serde::decode_from_slice(
+                serialized_resource,
+                bincode::config::standard(),
+            )
+            .map(|(resource, _)| resource)
+            .map_err(|error| {
+                log::error!("failed to parse {} as Bincode\n\n{}", name, error);
+                PersistenceError::BincodeDeserialization(error)
+            });
+        }
+
+        #[cfg(feature = "bincode")]
+        if let StorageFormat::BincodeLegacy = self {
             return bincode::serde::decode_from_slice(
                 serialized_resource,
                 bincode::config::legacy(),
             )
             .map(|(resource, _)| resource)
             .map_err(|error| {
-                log::error!("failed to parse {} as Bincode\n\n{}", name, error);
+                log::error!("failed to parse {} as legacy Bincode\n\n{}", name, error);
                 PersistenceError::BincodeDeserialization(error)
             });
         }
@@ -178,6 +206,8 @@ impl StorageFormat {
         match self {
             #[cfg(feature = "bincode")]
             StorageFormat::Bincode => unreachable!(),
+            #[cfg(feature = "bincode")]
+            StorageFormat::BincodeLegacy => unreachable!(),
             #[cfg(feature = "ini")]
             StorageFormat::Ini => {
                 serde_ini::from_str::<R>(serialized_resource_str).map_err(|error| {
