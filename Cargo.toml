@@ -14,6 +14,7 @@ authors = [
     "Scott Godwin <sgodwincs@gmail.com>",
     "Helium <liqhelium@gmail.com>",
     "Fallible <fallible.things@gmail.com>",
+    "Catheap dev <catheap@stopdelaying.com>",
 ]
 
 [dependencies]
