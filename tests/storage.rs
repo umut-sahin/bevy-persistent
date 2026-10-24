@@ -64,6 +64,42 @@ mod wasm {
     };
     use wasm_bindgen_test::*;
 
+    #[wasm_bindgen_test]
+    #[cfg(feature = "bincode")]
+    fn browser_storage_bincode_formats() -> anyhow::Result<()> {
+        let resource = KeyBindings::default();
+        let cases = [
+            (
+                Storage::LocalStorage { key: "bincode-standard-local".to_owned() },
+                StorageFormat::Bincode,
+            ),
+            (
+                Storage::LocalStorage { key: "bincode-legacy-local".to_owned() },
+                StorageFormat::BincodeLegacy,
+            ),
+            (
+                Storage::SessionStorage { key: "bincode-standard-session".to_owned() },
+                StorageFormat::Bincode,
+            ),
+            (
+                Storage::SessionStorage { key: "bincode-legacy-session".to_owned() },
+                StorageFormat::BincodeLegacy,
+            ),
+        ];
+
+        for (storage, format) in cases {
+            storage.write("key bindings", format, &resource)?;
+            let stored_bytes = match &storage {
+                Storage::LocalStorage { key } => LocalStorage::get::<Vec<u8>>(key)?,
+                Storage::SessionStorage { key } => SessionStorage::get::<Vec<u8>>(key)?,
+            };
+            assert_eq!(stored_bytes, format.serialize("key bindings", &resource)?);
+            assert_eq!(storage.read::<KeyBindings>("key bindings", format)?, resource);
+        }
+
+        Ok(())
+    }
+
 
     #[wasm_bindgen_test]
     fn local_storage_initialize() -> anyhow::Result<()> {

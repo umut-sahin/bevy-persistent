@@ -93,7 +93,7 @@ impl Storage {
                 }
 
                 #[cfg(feature = "bincode")]
-                if format == StorageFormat::Bincode {
+                if format.is_bincode() {
                     let bytes = LocalStorage::get::<Vec<u8>>(key).inspect_err(|error| {
                         if let StorageError::SerdeError(error) = &error {
                             log::error!("failed to get {} as a byte array\n\n{}", name, error);
@@ -135,7 +135,7 @@ impl Storage {
                 }
 
                 #[cfg(feature = "bincode")]
-                if format == StorageFormat::Bincode {
+                if format.is_bincode() {
                     let bytes = SessionStorage::get::<Vec<u8>>(key).inspect_err(|error| {
                         if let StorageError::SerdeError(error) = &error {
                             log::error!("failed to get {} as a byte array\n\n{}", name, error);
@@ -202,7 +202,7 @@ impl Storage {
                 }
 
                 #[cfg(feature = "bincode")]
-                if format == StorageFormat::Bincode {
+                if format.is_bincode() {
                     let bytes = format.serialize(name, resource)?;
                     LocalStorage::set::<&[u8]>(key, &bytes)?;
                     return Ok(());
@@ -244,7 +244,7 @@ impl Storage {
                 }
 
                 #[cfg(feature = "bincode")]
-                if format == StorageFormat::Bincode {
+                if format.is_bincode() {
                     let bytes = format.serialize(name, resource)?;
                     SessionStorage::set::<&[u8]>(key, &bytes)?;
                     return Ok(());

@@ -13,7 +13,7 @@ mod native {
 
         let actual_serialized_resource = format.serialize("key bindings", &resource).unwrap();
         let expected_serialized_resource =
-            bincode::serde::encode_to_vec(&resource, bincode::config::legacy())?;
+            bincode::serde::encode_to_vec(&resource, bincode::config::standard())?;
 
         assert_eq!(actual_serialized_resource, expected_serialized_resource);
 
@@ -22,7 +22,7 @@ mod native {
         let (expected_deserialized_resource, _) =
             bincode::serde::decode_from_slice::<KeyBindings, _>(
                 &expected_serialized_resource,
-                bincode::config::legacy(),
+                bincode::config::standard(),
             )?;
 
         assert_eq!(expected_deserialized_resource, actual_deserialized_resource);
@@ -36,11 +36,19 @@ mod native {
         // Bincode 1 encodes fixed-width integers and string lengths in little-endian order.
         let legacy_bytes = [4, 3, 2, 1, 3, 0, 0, 0, 0, 0, 0, 0, b'a', b'b', b'c'];
         let resource = (0x01020304_u32, String::from("abc"));
-        let format = StorageFormat::Bincode;
+        let format = StorageFormat::BincodeLegacy;
 
         assert_eq!(format.serialize("legacy save", &resource).unwrap(), legacy_bytes);
         assert_eq!(
             format.deserialize::<(u32, String)>("legacy save", &legacy_bytes).unwrap(),
+            resource,
+        );
+        let standard_bytes = StorageFormat::Bincode.serialize("new save", &resource).unwrap();
+        assert_ne!(standard_bytes, legacy_bytes);
+        assert_eq!(
+            StorageFormat::Bincode
+                .deserialize::<(u32, String)>("new save", &standard_bytes)
+                .unwrap(),
             resource,
         );
     }
@@ -269,7 +277,7 @@ mod wasm {
 
         let actual_serialized_resource = format.serialize("key bindings", &resource).unwrap();
         let expected_serialized_resource =
-            bincode::serde::encode_to_vec(&resource, bincode::config::legacy())?;
+            bincode::serde::encode_to_vec(&resource, bincode::config::standard())?;
 
         assert_eq!(actual_serialized_resource, expected_serialized_resource);
 
@@ -278,10 +286,24 @@ mod wasm {
         let (expected_deserialized_resource, _) =
             bincode::serde::decode_from_slice::<KeyBindings, _>(
                 &expected_serialized_resource,
-                bincode::config::legacy(),
+                bincode::config::standard(),
             )?;
 
         assert_eq!(expected_deserialized_resource, actual_deserialized_resource);
+
+        Ok(())
+    }
+
+    #[wasm_bindgen_test]
+    #[cfg(feature = "bincode")]
+    fn test_bincode_legacy() -> anyhow::Result<()> {
+        let resource = KeyBindings::default();
+        let format = StorageFormat::BincodeLegacy;
+        let bytes = format.serialize("key bindings", &resource)?;
+        let expected = bincode::serde::encode_to_vec(&resource, bincode::config::legacy())?;
+
+        assert_eq!(bytes, expected);
+        assert_eq!(format.deserialize::<KeyBindings>("key bindings", &bytes)?, resource);
 
         Ok(())
     }
